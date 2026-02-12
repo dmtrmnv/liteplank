@@ -4,11 +4,11 @@
   "description": "PWA приложение для тренировок планки",
   "lastUpdated": "2025-12-02T19:48:00Z",
   "files": [
-    "index.html",
-    "style.css",
-    "service-worker.js",
-    "manifest.json",
-    "icon-192.png",
-    "icon-512.png"
+    "liteplank/index.html",
+    "liteplank/style.css",
+    "liteplank/service-worker.js",
+    "liteplank/manifest.json",
+    "liteplank/icon-192.png",
+    "liteplank/icon-512.png"
   ]
 }
