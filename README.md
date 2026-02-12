@@ -125,8 +125,8 @@ MIT License - см. файл [LICENSE](LICENSE)
 
 ## Контакты
 
-- GitHub: [@dmtrmnv(https://github.com/dmtrmnv)
-- Telegram: [@dromanov89(https://t.me/dromanov89)
+- GitHub: [@dmtrmnv](https://github.com/dmtrmnv)
+- Telegram: [@dromanov89](https://t.me/dromanov89)
 
 ## Вклад в проект
 
