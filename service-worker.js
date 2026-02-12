@@ -1,10 +1,12 @@
 // LitePlank Service Worker
 const CACHE_NAME = 'liteplank-v1';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/manifest.json'
+    '/liteplank/',
+    '/liteplank/index.html',
+    '/liteplank/style.css',
+    '/liteplank/manifest.json',
+    '/liteplank/icon-192.png',
+    '/liteplank/icon-512.png'
 ];
 
 // Установка Service Worker
