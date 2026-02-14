@@ -28,8 +28,9 @@ async function getFilesToCache() {
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => {
-                return cache.addAll(getFilesToCache());
+            .then(async (cache) => {
+                const filesToCache = await getFilesToCache();
+                return cache.addAll(filesToCache);
             })
     );
 });
