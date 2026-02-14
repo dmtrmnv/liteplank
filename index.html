@@ -1254,13 +1254,12 @@
                         const registration = await navigator.serviceWorker.register('service-worker.js');
                         console.log('SW registered');
                         
-                        // Проверка обновлений при запуске
-                        this.checkForUpdates(registration);
-                        
-                        // Проверка обновлений каждые 5 минут
-                        setInterval(() => {
-                            this.checkForUpdates(registration);
-                        }, 5 * 60 * 1000);
+                        // Обработка сообщений от сервис-воркера
+                        navigator.serviceWorker.addEventListener('message', (event) => {
+                            if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+                                this.handleUpdateAvailable(event.data.version);
+                            }
+                        });
                         
                     } catch (error) {
                         console.log('SW registration failed:', error);
@@ -1268,64 +1267,14 @@
                 }
             }
 
-            async checkForUpdates(registration) {
-                try {
-                    // Проверяем версию на сервере
-                    const response = await fetch('/liteplank/version.json', {
-                        cache: 'no-cache',
-                        headers: {
-                            'Cache-Control': 'no-cache'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const serverVersion = await response.json();
-                        const currentVersion = this.getCurrentVersion();
-                        
-                        console.log('Current version:', currentVersion);
-                        console.log('Server version:', serverVersion);
-                        
-                        // Если версия на сервере новее
-                        if (this.isNewerVersion(serverVersion, currentVersion)) {
-                            console.log('New version available, updating...');
-                            this.showNotification('Доступна новая версия приложения', 'info');
-                            
-                            // Активируем обновление сервис-воркера
-                            if (registration.waiting) {
-                                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                            }
-                            
-                            // Перезагружаем страницу для применения обновлений
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-                        }
-                    }
-                } catch (error) {
-                    // Игнорируем ошибки сети - приложение должно работать офлайн
-                    console.log('Version check failed (offline mode):', error);
-                }
-            }
-
-            getCurrentVersion() {
-                // Версия из manifest.json или VERSION.md
-                return '1.0.3';
-            }
-
-            isNewerVersion(serverVersion, currentVersion) {
-                // Простое сравнение версий в формате "1.0.3"
-                const serverParts = serverVersion.version.split('.').map(Number);
-                const currentParts = currentVersion.split('.').map(Number);
+            handleUpdateAvailable(newVersion) {
+                console.log('Service Worker сообщает об обновлении:', newVersion);
+                this.showNotification('Приложение обновлено до версии ' + newVersion, 'success');
                 
-                for (let i = 0; i < Math.max(serverParts.length, currentParts.length); i++) {
-                    const serverPart = serverParts[i] || 0;
-                    const currentPart = currentParts[i] || 0;
-                    
-                    if (serverPart > currentPart) return true;
-                    if (serverPart < currentPart) return false;
-                }
-                
-                return false;
+                // Перезагружаем страницу для применения обновлений
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             }
         }
 
