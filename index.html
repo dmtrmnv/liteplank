@@ -785,26 +785,21 @@
                 this.updateHistory();
             }
 
-            calculateCalories(minutes) {
-                const gender = document.getElementById('userGender')?.value || 'male';
-                const weight = parseFloat(document.getElementById('userWeight')?.value || 70);
-                const height = parseFloat(document.getElementById('userHeight')?.value || 175);
-                const age = parseInt(document.getElementById('userAge')?.value || 30);
-                
-                // Проверка на валидные числовые значения
-                if (isNaN(weight) || isNaN(height) || isNaN(age) || weight <= 0 || height <= 0 || age <= 0) {
-                    return 0;
-                }
-                
-                let bmr;
-                if (gender === 'male') {
-                    bmr = 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
-                } else {
-                    bmr = 447.593 + 9.247 * weight + 3.098 * height - 4.330 * age;
-                }
-                const met = 3.5;
-                return (bmr / (weight * 24 * 60) + (3.5 * met / 200)) * weight * minutes;
-            }
+            calculateCalories(seconds) {
+    const weight = parseFloat(document.getElementById('userWeight')?.value || 70);
+    
+    // Проверка на валидные числовые значения
+    if (isNaN(weight) || weight <= 0) {
+        return 0;
+    }
+    
+    // MET для стандартной планки (можно сделать настраиваемым)
+    const met = 3.5; 
+    const minutes = seconds / 60;
+    // Стандартная формула: (MET * 3.5 * вес в кг) / 200 * минуты
+    const caloriesPerMinute = (met * 3.5 * weight) / 200;
+    return caloriesPerMinute * minutes;
+}
 
             playSound() {
                 if (!this.settings.soundEnabled) return;
@@ -1340,5 +1335,6 @@
 </body>
 
 </html>
+
 
 
