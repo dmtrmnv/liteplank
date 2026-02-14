@@ -68,7 +68,7 @@ self.addEventListener('activate', (event) => {
     // Проверка обновлений при активации нового сервис-воркера
     event.waitUntil(
         // Проверяем наличие нового файла версии
-        fetch('/version.json', { cache: 'no-cache' })
+        fetch('version.json', { cache: 'no-cache' })
             .then(response => {
                 if (response.ok) {
                     return response.json();
@@ -99,3 +99,4 @@ self.addEventListener('activate', (event) => {
             })
     );
 });
+
