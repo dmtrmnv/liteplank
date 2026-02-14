@@ -64,38 +64,124 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
-    
-    // Проверка обновлений при активации нового сервис-воркера
+});
+
+// Проверка обновлений при активации
+self.addEventListener('activate', (event) => {
     event.waitUntil(
-        // Проверяем наличие нового файла версии
-        fetch('version.json', { cache: 'no-cache' })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('No version file');
-            })
-            .then(serverVersion => {
-                // Если версия на сервере новее, обновляем кэш
-                if (serverVersion.version !== '1.0.3') {
-                    return caches.open(CACHE_NAME + '-temp')
-                        .then(cache => cache.addAll(urlsToCache))
-                        .then(() => caches.keys())
-                        .then(cacheNames => {
-                            return Promise.all(
-                                cacheNames.map(cacheName => {
-                                    if (cacheName !== CACHE_NAME + '-temp') {
-                                        return caches.delete(cacheName);
-                                    }
-                                })
-                            );
-                        })
-                        .then(() => caches.rename(CACHE_NAME + '-temp', CACHE_NAME));
-                }
-            })
-            .catch(() => {
-                // Игнорируем ошибки - приложение должно работать офлайн
-                console.log('Version check failed (offline mode)');
-            })
+        checkForUpdates()
     );
 });
+
+// Функция проверки обновлений
+async function checkForUpdates() {
+    try {
+        // Получаем version.json из кэша
+        const cache = await caches.open(CACHE_NAME);
+        const cachedResponse = await cache.match('version.json');
+        let cachedVersion = null;
+        
+        if (cachedResponse) {
+            cachedVersion = await cachedResponse.json();
+        }
+
+        // Получаем version.json с сервера
+        const networkResponse = await fetch('version.json', { cache: 'no-cache' });
+        
+        // Если version.json не найден на сервере, ничего не делаем
+        if (!networkResponse.ok) {
+            console.log('version.json не найден на сервере, обновление пропущено');
+            return;
+        }
+        
+        const serverVersion = await networkResponse.json();
+
+        // Если версии отличаются или кэш пуст
+        if (!cachedVersion || cachedVersion.version !== serverVersion.version) {
+            console.log('Обнаружено обновление:', {
+                cached: cachedVersion?.version || 'отсутствует',
+                server: serverVersion.version
+            });
+
+            // Обновляем кэш с новыми файлами
+            await updateCache(serverVersion);
+        }
+    } catch (error) {
+        console.log('Проверка обновлений не удалась (режим офлайн):', error);
+    }
+}
+
+// Функция обновления кэша
+async function updateCache(serverVersion) {
+    try {
+        // Создаем временный кэш для новой версии
+        const tempCacheName = CACHE_NAME + '-temp-' + Date.now();
+        const tempCache = await caches.open(tempCacheName);
+        
+        // Добавляем все файлы из нового version.json
+        const filesToCache = serverVersion.files || [];
+        
+        // Также добавляем сам version.json
+        if (!filesToCache.includes('version.json')) {
+            filesToCache.push('version.json');
+        }
+        
+        // Кэшируем все файлы
+        await tempCache.addAll(filesToCache.map(file => {
+            // Делаем URL абсолютным для корректной загрузки
+            return new Request(file, { cache: 'no-cache' });
+        }));
+
+        // Получаем все имена кэшей
+        const cacheNames = await caches.keys();
+        
+        // Удаляем старые кэши
+        await Promise.all(
+            cacheNames.map(cacheName => {
+                if (cacheName !== tempCacheName) {
+                    return caches.delete(cacheName);
+                }
+            })
+        );
+
+        // Переименовываем временный кэш в основной
+        await caches.open(CACHE_NAME);
+        const mainCache = await caches.open(CACHE_NAME);
+        
+        // Копируем содержимое временного кэша в основной
+        const tempCache2 = await caches.open(tempCacheName);
+        const requests = await tempCache2.keys();
+        
+        for (const request of requests) {
+            const response = await tempCache2.match(request);
+            if (response) {
+                await mainCache.put(request, response);
+            }
+        }
+        
+        // Удаляем временный кэш
+        await caches.delete(tempCacheName);
+        
+        console.log('Кэш успешно обновлен');
+        
+        // Уведомляем клиента об обновлении
+        self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+                client.postMessage({
+                    type: 'UPDATE_AVAILABLE',
+                    version: serverVersion.version
+                });
+            });
+        });
+        
+    } catch (error) {
+        console.error('Ошибка при обновлении кэша:', error);
+        // В случае ошибки удаляем временный кэш
+        const cacheNames = await caches.keys();
+        cacheNames.forEach(cacheName => {
+            if (cacheName.includes('-temp-')) {
+                caches.delete(cacheName);
+            }
+        });
+    }
+}
