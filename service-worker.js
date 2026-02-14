@@ -96,6 +96,10 @@ async function checkForUpdates() {
         
         const serverVersion = await networkResponse.json();
 
+        // Выводим версии в консоль
+        console.log('Версия из кэша:', cachedVersion?.version || 'отсутствует');
+        console.log('Версия с сервера:', serverVersion.version);
+
         // Если версии отличаются или кэш пуст
         if (!cachedVersion || cachedVersion.version !== serverVersion.version) {
             console.log('Обнаружено обновление:', {
