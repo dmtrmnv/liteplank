@@ -1,12 +1,35 @@
 // LitePlank Service Worker
 const CACHE_NAME = 'liteplank-v1';
 
+// Функция для получения списка файлов для кэширования
+async function getFilesToCache() {
+    try {
+        const response = await fetch('version.json', { cache: 'no-cache' });
+        if (response.ok) {
+            const versionData = await response.json();
+            return versionData.files || [];
+        }
+    } catch (error) {
+        console.log('Failed to fetch version.json, using default files');
+    }
+    
+    // Файлы по умолчанию, если version.json недоступен
+    return [
+        '/liteplank/',
+        '/liteplank/index.html',
+        '/liteplank/style.css',
+        '/liteplank/manifest.json',
+        '/liteplank/icon-192.png',
+        '/liteplank/icon-512.png'
+    ];
+}
+
 // Установка Service Worker
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                return cache.addAll(urlsToCache);
+                return cache.addAll(getFilesToCache());
             })
     );
 });
@@ -59,28 +82,6 @@ function saveInstalledVersion(version) {
     }
 }
 
-// Функция для получения списка файлов для кэширования
-async function getFilesToCache() {
-    try {
-        const response = await fetch('version.json', { cache: 'no-cache' });
-        if (response.ok) {
-            const versionData = await response.json();
-            return versionData.files || [];
-        }
-    } catch (error) {
-        console.log('Failed to fetch version.json, using default files');
-    }
-    
-    // Файлы по умолчанию, если version.json недоступен
-    return [
-        '/liteplank/',
-        '/liteplank/index.html',
-        '/liteplank/style.css',
-        '/liteplank/manifest.json',
-        '/liteplank/icon-192.png',
-        '/liteplank/icon-512.png'
-    ];
-}
 
 // Функция для сравнения версий
 function isNewerVersion(serverVersion, currentVersion) {
