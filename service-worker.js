@@ -126,8 +126,8 @@ async function updateCache(serverVersion) {
         const filesToCache = serverVersion.files || [];
         
         // Также добавляем сам version.json
-        if (!filesToCache.includes('version.json')) {
-            filesToCache.push('version.json');
+        if (!filesToCache.includes('liteplank/version.json')) {
+            filesToCache.push('liteplank/version.json');
         }
         
         // Кэшируем все файлы
