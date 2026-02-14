@@ -785,7 +785,7 @@
                 this.updateHistory();
             }
 
-           calculateCalories(seconds) {
+            calculateCalories(seconds) {
     const weight = parseFloat(document.getElementById('userWeight')?.value || 70);
     
     // Проверка на валидные числовые значения
@@ -1262,19 +1262,6 @@
                             this.checkForUpdates(registration);
                         }, 5 * 60 * 1000);
                         
-                        // Обработка сообщений от service worker
-                        navigator.serviceWorker.addEventListener('message', (event) => {
-                            if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-                                console.log('App updated to version:', event.data.version);
-                                this.showNotification('Приложение обновлено до версии ' + event.data.version, 'success');
-                                
-                                // Перезагружаем страницу для применения обновлений
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 2000);
-                            }
-                        });
-                        
                     } catch (error) {
                         console.log('SW registration failed:', error);
                     }
@@ -1283,15 +1270,8 @@
 
             async checkForUpdates(registration) {
                 try {
-                    // Отправляем сообщение service worker для проверки обновлений
-                    if (navigator.serviceWorker.controller) {
-                        navigator.serviceWorker.controller.postMessage({
-                            type: 'CHECK_FOR_UPDATES'
-                        });
-                    }
-                    
-                    // Дополнительная проверка через fetch для надежности
-                    const response = await fetch('version.json', {
+                    // Проверяем версию на сервере
+                    const response = await fetch('/liteplank/version.json', {
                         cache: 'no-cache',
                         headers: {
                             'Cache-Control': 'no-cache'
@@ -1299,8 +1279,7 @@
                     });
                     
                     if (response.ok) {
-                        const serverVersionData = await response.json();
-                        const serverVersion = serverVersionData.version;
+                        const serverVersion = await response.json();
                         const currentVersion = this.getCurrentVersion();
                         
                         console.log('Current version:', currentVersion);
@@ -1329,23 +1308,13 @@
             }
 
             getCurrentVersion() {
-                // Получаем версию из localStorage, если она там есть
-                try {
-                    const storedVersion = localStorage.getItem('liteplank-installed-version');
-                    if (storedVersion) {
-                        return storedVersion;
-                    }
-                } catch (error) {
-                    console.log('Failed to get version from localStorage');
-                }
-                
-                // Если в localStorage нет версии, устанавливаем 1.0.0
-                return '1.0.0';
+                // Версия из manifest.json или VERSION.md
+                return '1.0.3';
             }
 
             isNewerVersion(serverVersion, currentVersion) {
                 // Простое сравнение версий в формате "1.0.3"
-                const serverParts = serverVersion.split('.').map(Number);
+                const serverParts = serverVersion.version.split('.').map(Number);
                 const currentParts = currentVersion.split('.').map(Number);
                 
                 for (let i = 0; i < Math.max(serverParts.length, currentParts.length); i++) {
