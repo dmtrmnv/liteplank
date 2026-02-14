@@ -131,10 +131,21 @@ async function updateCache(serverVersion) {
         }
         
         // Кэшируем все файлы
-        await tempCache.addAll(filesToCache.map(file => {
-            // Делаем URL абсолютным для корректной загрузки
-            return new Request(file, { cache: 'no-cache' });
-        }));
+        for (const file of filesToCache) {
+            try {
+                // Создаем абсолютный URL для каждого файла
+                const absoluteUrl = new URL(file, location.origin).href;
+                const response = await fetch(absoluteUrl, { cache: 'no-cache' });
+                
+                if (response.ok) {
+                    await tempCache.put(absoluteUrl, response);
+                } else {
+                    console.warn(`Не удалось загрузить файл: ${file}, статус: ${response.status}`);
+                }
+            } catch (error) {
+                console.error(`Ошибка при загрузке файла ${file}:`, error);
+            }
+        }
 
         // Получаем все имена кэшей
         const cacheNames = await caches.keys();
@@ -157,9 +168,13 @@ async function updateCache(serverVersion) {
         const requests = await tempCache2.keys();
         
         for (const request of requests) {
-            const response = await tempCache2.match(request);
-            if (response) {
-                await mainCache.put(request, response);
+            try {
+                const response = await tempCache2.match(request);
+                if (response) {
+                    await mainCache.put(request, response);
+                }
+            } catch (error) {
+                console.error(`Ошибка при копировании файла ${request.url}:`, error);
             }
         }
         
