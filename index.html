@@ -1251,8 +1251,27 @@
             async setupServiceWorker() {
                 if ('serviceWorker' in navigator) {
                     try {
+                        console.log('Приложение: Регистрация Service Worker...');
                         const registration = await navigator.serviceWorker.register('service-worker.js');
-                        console.log('SW registered');
+                        console.log('Приложение: SW зарегистрирован:', registration.scope);
+                        
+                        // Ждем активации SW
+                        if (registration.waiting) {
+                            console.log('Приложение: SW уже активен');
+                        } else if (registration.installing) {
+                            console.log('Приложение: SW устанавливается');
+                            registration.installing.addEventListener('statechange', (event) => {
+                                if (event.target.state === 'installed') {
+                                    console.log('Приложение: SW установлен');
+                                } else if (event.target.state === 'activated') {
+                                    console.log('Приложение: SW активирован');
+                                    this.checkVersionJson();
+                                }
+                            });
+                        } else if (registration.active) {
+                            console.log('Приложение: SW активен');
+                            this.checkVersionJson();
+                        }
                         
                         // Обработка сообщений от сервис-воркера
                         navigator.serviceWorker.addEventListener('message', (event) => {
@@ -1261,12 +1280,11 @@
                             }
                         });
                         
-                        // Принудительная проверка version.json при загрузке
-                        this.checkVersionJson();
-                        
                     } catch (error) {
-                        console.log('SW registration failed:', error);
+                        console.log('Приложение: Ошибка регистрации SW:', error);
                     }
+                } else {
+                    console.log('Приложение: Service Worker не поддерживается');
                 }
             }
 

@@ -77,7 +77,7 @@ if (event.request.url.includes('version.json')) {
                                 // Загружаем сам version.json для получения списка файлов
                                 response.clone().json().then(serverVersion => {
                                     console.log('Service Worker: Обнаружено обновление, перестраиваю кэш');
-                                    this.updateCache(serverVersion);
+                                    updateCache(serverVersion);
                                 });
                             }
                             return response;
