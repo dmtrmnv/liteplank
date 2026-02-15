@@ -1319,10 +1319,29 @@
                 console.log('Service Worker сообщает об обновлении:', newVersion);
                 this.showNotification('Приложение обновлено до версии ' + newVersion, 'success');
                 
-                // Перезагружаем страницу для применения обновлений
+                // Принудительная проверка кэша после обновления
                 setTimeout(() => {
+                    console.log('Приложение: Проверка кэша после обновления...');
+                    this.checkCacheStatus();
                     window.location.reload();
-                }, 2000);
+                }, 1000);
+            }
+
+            async checkCacheStatus() {
+                try {
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        console.log('Приложение: Доступные кэши:', cacheNames);
+                        
+                        for (const cacheName of cacheNames) {
+                            const cache = await caches.open(cacheName);
+                            const keys = await cache.keys();
+                            console.log(`Приложение: Файлы в кэше ${cacheName}:`, keys.map(req => req.url));
+                        }
+                    }
+                } catch (error) {
+                    console.log('Приложение: Ошибка проверки кэша:', error);
+                }
             }
         }
 

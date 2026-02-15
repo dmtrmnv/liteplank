@@ -79,8 +79,16 @@ if (event.request.url.includes('version.json')) {
                                 
                                 // Загружаем сам version.json для получения списка файлов
                                 response.clone().json().then(serverVersion => {
-                                    console.log('Service Worker: Обнаружено обновление, перестраиваю кэш');
-                                    updateCache(serverVersion);
+                                    console.log('Service Worker: ОБНАРУЖЕНО ОБНОВЛЕНИЕ version.json! Перестраиваю кэш с новыми файлами');
+                                    console.log('Service Worker: Новая версия:', serverVersion.version);
+                                    console.log('Service Worker: Файлы для кэширования:', serverVersion.files);
+                                    
+                                    // Немедленно перестраиваем кэш с новыми файлами
+                                    updateCache(serverVersion).then(() => {
+                                        console.log('Service Worker: Кэш успешно перестроен с новыми файлами!');
+                                    }).catch(error => {
+                                        console.error('Service Worker: Ошибка при перестройке кэша:', error);
+                                    });
                                 });
                             }
                             return response;
