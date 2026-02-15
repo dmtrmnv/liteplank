@@ -158,54 +158,9 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
-        }).then(() => {
-            // После очистки кэшей проверяем обновления
-            return checkForUpdates();
         })
     );
 });
-
-// Функция проверки обновлений
-async function checkForUpdates() {
-    try {
-        // Получаем version.json из кэша
-        const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match('version.json');
-        let cachedVersion = null;
-        
-        if (cachedResponse) {
-            cachedVersion = await cachedResponse.json();
-        }
-
-        // Получаем version.json с сервера
-        const networkResponse = await fetch('version.json', { cache: 'no-cache' });
-        
-        // Если version.json не найден на сервере, ничего не делаем
-        if (!networkResponse.ok) {
-            console.log('version.json не найден на сервере, обновление пропущено');
-            return;
-        }
-        
-        const serverVersion = await networkResponse.json();
-
-        // Выводим версии в консоль
-        console.log('Версия из кэша:', cachedVersion?.version || 'отсутствует');
-        console.log('Версия с сервера:', serverVersion.version);
-
-        // Если версии отличаются или кэш пуст
-        if (!cachedVersion || cachedVersion.version !== serverVersion.version) {
-            console.log('Обнаружено обновление:', {
-                cached: cachedVersion?.version || 'отсутствует',
-                server: serverVersion.version
-            });
-
-            // Обновляем кэш с новыми файлами
-            await updateCache(serverVersion);
-        }
-    } catch (error) {
-        console.log('Проверка обновлений не удалась (режим офлайн):', error);
-    }
-}
 
 // Функция обновления кэша
 async function updateCache(serverVersion) {
