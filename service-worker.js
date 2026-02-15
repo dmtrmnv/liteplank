@@ -1,12 +1,12 @@
 // LitePlank Service Worker - Полностью переработанная система кэширования
 const CACHE_NAME = 'liteplank-v1';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/style.css',
-    '/manifest.json',
-    '/icon-192.png',
-    '/icon-512.png'
+    '/liteplank/',
+    '/liteplank/index.html',
+    '/liteplank/style.css',
+    '/liteplank/manifest.json',
+    '/liteplank/icon-192.png',
+    '/liteplank/icon-512.png'
 ];
 
 // Установка Service Worker
@@ -77,13 +77,13 @@ async function updateCache() {
         
         // Список всех возможных файлов приложения
         const allFiles = [
-            '/',
-            '/index.html',
-            '/style.css',
-            '/manifest.json',
-            '/icon-192.png',
-            '/icon-512.png',
-            '/service-worker.js'
+            '/liteplank/',
+            '/liteplank/index.html',
+            '/liteplank/style.css',
+            '/liteplank/manifest.json',
+            '/liteplank/icon-192.png',
+            '/liteplank/icon-512.png',
+            '/liteplank/service-worker.js'
         ];
         
         let filesUpdated = 0;
