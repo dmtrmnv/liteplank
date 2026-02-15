@@ -1,5 +1,5 @@
 {
-  "version": "1.0.12",
+  "version": "1.0.13",
   "name": "LitePlank",
   "description": "PWA приложение для тренировок планки",
   "lastUpdated": "2025-14-02T12:33:00Z",
@@ -12,6 +12,7 @@
     "liteplank/icon-512.png"
   ]
 }
+
 
 
 
