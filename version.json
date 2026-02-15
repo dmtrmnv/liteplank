@@ -1,21 +1,19 @@
 {
-  "version": "1.0.10",
+  "version": "1.0.7",
   "name": "LitePlank",
   "description": "PWA приложение для тренировок планки",
-  "lastUpdated": "2025-02-15T12:33:00Z",
+  "lastUpdated": "2025-14-02T12:33:00Z",
   "files": [
-    "/liteplank/index.html",
-    "/liteplank/style.css",
-    "/liteplank/service-worker.js",
-    "/liteplank/manifest.json",
-    "/liteplank/icon-192.png",
-    "/liteplank/icon-512.png",
-    "/liteplank/locales/languages.json",
-    "/liteplank/locales/ru.json",
-    "/liteplank/locales/en.json"
-  ],
-  "languages": {
-    "supported": ["ru", "en"],
-    "default": "ru"
-  }
+    "liteplank/index.html",
+    "liteplank/style.css",
+    "liteplank/service-worker.js",
+    "liteplank/manifest.json",
+    "liteplank/icon-192.png",
+    "liteplank/icon-512.png"
+  ]
 }
+
+
+
+
+
