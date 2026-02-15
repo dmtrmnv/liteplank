@@ -23,7 +23,10 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
 // Для version.json всегда проверяем сервер и сравниваем версии
 if (event.request.url.includes('version.json')) {
-    console.log('Service Worker: Перехвачен запрос к version.json:', event.request.url);
+    console.log('Service Worker: ПЕРЕХВАЧЕН ЗАПРОС К version.json:', event.request.url);
+    console.log('Service Worker: URL запроса:', event.request.url);
+    console.log('Service Worker: Метод:', event.request.method);
+    console.log('Service Worker: Headers:', event.request.headers);
     
     event.respondWith(
         Promise.all([

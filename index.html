@@ -1291,16 +1291,24 @@
             async checkVersionJson() {
                 try {
                     console.log('Приложение: Проверка version.json...');
-                    const response = await fetch('version.json', { 
+                    
+                    // Принудительный запрос с уникальным параметром для обхода кэша
+                    const timestamp = Date.now();
+                    const response = await fetch(`version.json?t=${timestamp}`, { 
                         cache: 'no-cache',
-                        headers: { 'Cache-Control': 'no-cache' }
+                        headers: { 
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache',
+                            'If-Modified-Since': '0'
+                        }
                     });
                     
                     if (response.ok) {
                         const versionData = await response.json();
                         console.log('Приложение: version.json загружен, версия:', versionData.version);
+                        console.log('Приложение: Ответ от сервера:', response.status, response.headers.get('ETag'));
                     } else {
-                        console.log('Приложение: version.json не найден на сервере');
+                        console.log('Приложение: version.json не найден на сервере, статус:', response.status);
                     }
                 } catch (error) {
                     console.log('Приложение: Ошибка при проверке version.json:', error);
