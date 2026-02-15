@@ -23,28 +23,43 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
 // Для version.json всегда проверяем сервер и сравниваем версии
 if (event.request.url.includes('version.json')) {
+    console.log('Service Worker: Перехвачен запрос к version.json:', event.request.url);
+    
     event.respondWith(
         Promise.all([
             // Получаем version.json из кэша
-            caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then(response => 
-                response ? response.clone().json() : null
-            ),
+            caches.open(CACHE_NAME).then(cache => {
+                console.log('Service Worker: Проверка кэша для version.json');
+                return cache.match(event.request).then(response => 
+                    response ? response.clone().json() : null
+                );
+            }),
             // Получаем version.json с сервера
-            fetch(event.request, { cache: 'no-cache' }).then(response => 
-                response.ok ? response.clone().json() : null
-            )
+            fetch(event.request, { cache: 'no-cache' }).then(response => {
+                console.log('Service Worker: Запрос к серверу для version.json, статус:', response.status);
+                return response.ok ? response.clone().json() : null;
+            }).catch(error => {
+                console.log('Service Worker: Ошибка запроса к серверу:', error);
+                return null;
+            })
         ]).then(([cachedVersion, serverVersion]) => {
+            console.log('Service Worker: Сравнение версий:', {
+                cached: cachedVersion?.version || 'отсутствует',
+                server: serverVersion?.version || 'отсутствует'
+            });
+            
             // Если есть серверная версия
             if (serverVersion) {
                 // Сравниваем версии
                 if (!cachedVersion || cachedVersion.version !== serverVersion.version) {
-                    console.log('Обнаружено обновление version.json:', {
+                    console.log('Service Worker: ОБНАРУЖЕНО ОБНОВЛЕНИЕ version.json!', {
                         cached: cachedVersion?.version || 'отсутствует',
                         server: serverVersion.version
                     });
                     
                     // Удаляем старый version.json из кэша
                     caches.open(CACHE_NAME).then(cache => {
+                        console.log('Service Worker: Удаление старого version.json из кэша');
                         cache.delete(event.request);
                     });
                     
@@ -52,25 +67,31 @@ if (event.request.url.includes('version.json')) {
                     return fetch(event.request, { cache: 'no-cache' })
                         .then(response => {
                             if (response.ok) {
+                                console.log('Service Worker: Загрузка новой версии version.json');
                                 const responseToCache = response.clone();
                                 caches.open(CACHE_NAME).then(cache => {
+                                    console.log('Service Worker: Кэширование новой версии version.json');
                                     cache.put(event.request, responseToCache);
                                 });
                             }
                             return response;
                         });
                 } else {
+                    console.log('Service Worker: Версии одинаковые, возвращаем серверную версию');
                     // Версии одинаковые, возвращаем серверную версию
                     return fetch(event.request, { cache: 'no-cache' });
                 }
             } else if (cachedVersion) {
+                console.log('Service Worker: Сервер недоступен, возвращаем из кэша');
                 // Сервер недоступен, но есть кэш
                 return caches.match(event.request);
             } else {
+                console.log('Service Worker: Ни сервер, ни кэш недоступны');
                 // Ни сервер, ни кэш недоступны
                 throw new Error('version.json недоступен');
             }
-        }).catch(() => {
+        }).catch(error => {
+            console.log('Service Worker: Ошибка в обработке version.json:', error);
             // При любой ошибке возвращаем из кэша
             return caches.match(event.request) || new Response('{"version":"0.0.0"}', {
                 status: 200,

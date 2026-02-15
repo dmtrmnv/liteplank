@@ -1261,9 +1261,31 @@
                             }
                         });
                         
+                        // Принудительная проверка version.json при загрузке
+                        this.checkVersionJson();
+                        
                     } catch (error) {
                         console.log('SW registration failed:', error);
                     }
+                }
+            }
+
+            async checkVersionJson() {
+                try {
+                    console.log('Приложение: Проверка version.json...');
+                    const response = await fetch('version.json', { 
+                        cache: 'no-cache',
+                        headers: { 'Cache-Control': 'no-cache' }
+                    });
+                    
+                    if (response.ok) {
+                        const versionData = await response.json();
+                        console.log('Приложение: version.json загружен, версия:', versionData.version);
+                    } else {
+                        console.log('Приложение: version.json не найден на сервере');
+                    }
+                } catch (error) {
+                    console.log('Приложение: Ошибка при проверке version.json:', error);
                 }
             }
 
