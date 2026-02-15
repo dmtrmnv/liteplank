@@ -21,21 +21,79 @@ self.addEventListener('install', (event) => {
 
 // Обработка запросов
 self.addEventListener('fetch', (event) => {
+// Для version.json всегда проверяем сервер и сравниваем версии
+if (event.request.url.includes('version.json')) {
+    event.respondWith(
+        Promise.all([
+            // Получаем version.json из кэша
+            caches.open(CACHE_NAME).then(cache => cache.match(event.request)).then(response => 
+                response ? response.clone().json() : null
+            ),
+            // Получаем version.json с сервера
+            fetch(event.request, { cache: 'no-cache' }).then(response => 
+                response.ok ? response.clone().json() : null
+            )
+        ]).then(([cachedVersion, serverVersion]) => {
+            // Если есть серверная версия
+            if (serverVersion) {
+                // Сравниваем версии
+                if (!cachedVersion || cachedVersion.version !== serverVersion.version) {
+                    console.log('Обнаружено обновление version.json:', {
+                        cached: cachedVersion?.version || 'отсутствует',
+                        server: serverVersion.version
+                    });
+                    
+                    // Удаляем старый version.json из кэша
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.delete(event.request);
+                    });
+                    
+                    // Загружаем и кэшируем новую версию
+                    return fetch(event.request, { cache: 'no-cache' })
+                        .then(response => {
+                            if (response.ok) {
+                                const responseToCache = response.clone();
+                                caches.open(CACHE_NAME).then(cache => {
+                                    cache.put(event.request, responseToCache);
+                                });
+                            }
+                            return response;
+                        });
+                } else {
+                    // Версии одинаковые, возвращаем серверную версию
+                    return fetch(event.request, { cache: 'no-cache' });
+                }
+            } else if (cachedVersion) {
+                // Сервер недоступен, но есть кэш
+                return caches.match(event.request);
+            } else {
+                // Ни сервер, ни кэш недоступны
+                throw new Error('version.json недоступен');
+            }
+        }).catch(() => {
+            // При любой ошибке возвращаем из кэша
+            return caches.match(event.request) || new Response('{"version":"0.0.0"}', {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        })
+    );
+    return;
+}
+
+    // Для остальных файлов - стандартная логика кэширования
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
-                // Возвращаем закэшированный ресурс или делаем запрос
                 if (response) {
                     return response;
                 }
                 return fetch(event.request).then(
                     (response) => {
-                        // Проверяем, что ответ валидный
                         if (!response || response.status !== 200 || response.type !== 'basic') {
                             return response;
                         }
 
-                        // Кэшируем ответ
                         const responseToCache = response.clone();
                         caches.open(CACHE_NAME)
                             .then((cache) => {
@@ -62,14 +120,10 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
+        }).then(() => {
+            // После очистки кэшей проверяем обновления
+            return checkForUpdates();
         })
-    );
-});
-
-// Проверка обновлений при активации
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        checkForUpdates()
     );
 });
 
