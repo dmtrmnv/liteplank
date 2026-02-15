@@ -1,12 +1,12 @@
-// LitePlank Service Worker
+// LitePlank Service Worker - Полностью переработанная система кэширования
 const CACHE_NAME = 'liteplank-v1';
 const urlsToCache = [
-    '/liteplank/',
-    '/liteplank/index.html',
-    '/liteplank/style.css',
-    '/liteplank/manifest.json',
-    '/liteplank/icon-192.png',
-    '/liteplank/icon-512.png'
+    '/',
+    '/index.html',
+    '/style.css',
+    '/manifest.json',
+    '/icon-192.png',
+    '/icon-512.png'
 ];
 
 // Установка Service Worker
@@ -21,117 +21,21 @@ self.addEventListener('install', (event) => {
 
 // Обработка запросов
 self.addEventListener('fetch', (event) => {
-// Для version.json всегда проверяем сервер и сравниваем версии
-if (event.request.url.includes('version.json')) {
-    console.log('Service Worker: ПЕРЕХВАЧЕН ЗАПРОС К version.json:', event.request.url);
-    console.log('Service Worker: URL запроса:', event.request.url);
-    console.log('Service Worker: Метод:', event.request.method);
-    console.log('Service Worker: Headers:', event.request.headers);
-    
-    event.respondWith(
-        Promise.all([
-            // Получаем version.json из кэша
-            caches.open(CACHE_NAME).then(cache => {
-                console.log('Service Worker: Проверка кэша для version.json');
-                return cache.match(event.request).then(response => 
-                    response ? response.clone().json() : null
-                );
-            }),
-            // Получаем version.json с сервера
-            fetch(event.request, { cache: 'no-cache' }).then(response => {
-                console.log('Service Worker: Запрос к серверу для version.json, статус:', response.status);
-                return response.ok ? response.clone().json() : null;
-            }).catch(error => {
-                console.log('Service Worker: Ошибка запроса к серверу:', error);
-                return null;
-            })
-        ]).then(([cachedVersion, serverVersion]) => {
-            console.log('Service Worker: Сравнение версий:', {
-                cached: cachedVersion?.version || 'отсутствует',
-                server: serverVersion?.version || 'отсутствует'
-            });
-            
-            // Если есть серверная версия
-            if (serverVersion) {
-                // Сравниваем версии
-                if (!cachedVersion || cachedVersion.version !== serverVersion.version) {
-                    console.log('Service Worker: ОБНАРУЖЕНО ОБНОВЛЕНИЕ version.json!', {
-                        cached: cachedVersion?.version || 'отсутствует',
-                        server: serverVersion.version
-                    });
-                    
-                    // Удаляем старый version.json из кэша
-                    caches.open(CACHE_NAME).then(cache => {
-                        console.log('Service Worker: Удаление старого version.json из кэша');
-                        cache.delete(event.request);
-                    });
-                    
-                    // Загружаем и кэшируем новую версию
-                    return fetch(event.request, { cache: 'no-cache' })
-                        .then(response => {
-                            if (response.ok) {
-                                console.log('Service Worker: Загрузка новой версии version.json');
-                                const responseToCache = response.clone();
-                                caches.open(CACHE_NAME).then(cache => {
-                                    console.log('Service Worker: Кэширование новой версии version.json');
-                                    cache.put(event.request, responseToCache);
-                                });
-                                
-                                // Загружаем сам version.json для получения списка файлов
-                                response.clone().json().then(serverVersion => {
-                                    console.log('Service Worker: ОБНАРУЖЕНО ОБНОВЛЕНИЕ version.json! Перестраиваю кэш с новыми файлами');
-                                    console.log('Service Worker: Новая версия:', serverVersion.version);
-                                    console.log('Service Worker: Файлы для кэширования:', serverVersion.files);
-                                    
-                                    // Немедленно перестраиваем кэш с новыми файлами
-                                    updateCache(serverVersion).then(() => {
-                                        console.log('Service Worker: Кэш успешно перестроен с новыми файлами!');
-                                    }).catch(error => {
-                                        console.error('Service Worker: Ошибка при перестройке кэша:', error);
-                                    });
-                                });
-                            }
-                            return response;
-                        });
-                } else {
-                    console.log('Service Worker: Версии одинаковые, возвращаем серверную версию');
-                    // Версии одинаковые, возвращаем серверную версию
-                    return fetch(event.request, { cache: 'no-cache' });
-                }
-            } else if (cachedVersion) {
-                console.log('Service Worker: Сервер недоступен, возвращаем из кэша');
-                // Сервер недоступен, но есть кэш
-                return caches.match(event.request);
-            } else {
-                console.log('Service Worker: Ни сервер, ни кэш недоступны');
-                // Ни сервер, ни кэш недоступны
-                throw new Error('version.json недоступен');
-            }
-        }).catch(error => {
-            console.log('Service Worker: Ошибка в обработке version.json:', error);
-            // При любой ошибке возвращаем из кэша
-            return caches.match(event.request) || new Response('{"version":"0.0.0"}', {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        })
-    );
-    return;
-}
-
-    // Для остальных файлов - стандартная логика кэширования
     event.respondWith(
         caches.match(event.request)
             .then((response) => {
+                // Возвращаем закэшированный ресурс или делаем запрос
                 if (response) {
                     return response;
                 }
                 return fetch(event.request).then(
                     (response) => {
+                        // Проверяем, что ответ валидный
                         if (!response || response.status !== 200 || response.type !== 'basic') {
                             return response;
                         }
 
+                        // Кэшируем ответ
                         const responseToCache = response.clone();
                         caches.open(CACHE_NAME)
                             .then((cache) => {
@@ -162,98 +66,222 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Функция обновления кэша
-async function updateCache(serverVersion) {
+// Функция обновления кэша при наличии сети
+async function updateCache() {
     try {
-        console.log('Service Worker: Начинаю перестройку кэша для версии:', serverVersion.version);
+        console.log('Начинаем обновление кэша...');
         
         // Создаем временный кэш для новой версии
         const tempCacheName = CACHE_NAME + '-temp-' + Date.now();
         const tempCache = await caches.open(tempCacheName);
         
-        // Добавляем все файлы из нового version.json
-        const filesToCache = serverVersion.files || [];
+        // Список всех возможных файлов приложения
+        const allFiles = [
+            '/',
+            '/index.html',
+            '/style.css',
+            '/manifest.json',
+            '/icon-192.png',
+            '/icon-512.png',
+            '/service-worker.js'
+        ];
         
-        // Также добавляем сам version.json
-        if (!filesToCache.includes('liteplank/version.json')) {
-            filesToCache.push('liteplank/version.json');
-        }
+        let filesUpdated = 0;
+        let newFilesFound = 0;
         
-        console.log('Service Worker: Файлы для кэширования:', filesToCache);
-        
-        // Кэшируем все файлы из version.json
-        for (const file of filesToCache) {
+        // Сначала кэшируем все файлы из списка
+        for (const file of allFiles) {
             try {
                 // Создаем абсолютный URL для каждого файла
                 const absoluteUrl = new URL(file, location.origin).href;
-                console.log('Service Worker: Кэширование файла:', file, '->', absoluteUrl);
                 
-                const response = await fetch(absoluteUrl, { cache: 'no-cache' });
+                // Пытаемся получить файл с сервера
+                const response = await fetch(absoluteUrl, { 
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
                 
                 if (response.ok) {
-                    await tempCache.put(absoluteUrl, response);
-                    console.log('Service Worker: Файл успешно закэширован:', file);
+                    // Проверяем, отличается ли файл от закэшированного
+                    const cachedResponse = await caches.match(absoluteUrl);
+                    let shouldUpdate = true;
+                    
+                    if (cachedResponse) {
+                        // Сравниваем размеры файлов
+                        const cachedSize = await cachedResponse.clone().blob().then(b => b.size);
+                        const newSize = await response.clone().blob().then(b => b.size);
+                        
+                        // Если размеры совпадают, возможно файл не изменился
+                        if (cachedSize === newSize) {
+                            // Для надежности можно добавить проверку по etag или last-modified
+                            const cachedEtag = cachedResponse.headers.get('etag');
+                            const newEtag = response.headers.get('etag');
+                            const cachedLastModified = cachedResponse.headers.get('last-modified');
+                            const newLastModified = response.headers.get('last-modified');
+                            
+                            if (cachedEtag && newEtag && cachedEtag === newEtag) {
+                                shouldUpdate = false;
+                            } else if (cachedLastModified && newLastModified && cachedLastModified === newLastModified) {
+                                shouldUpdate = false;
+                            } else if (!cachedEtag && !newEtag && !cachedLastModified && !newLastModified) {
+                                // Если нет заголовков, сравниваем содержимое
+                                const cachedText = await cachedResponse.clone().text();
+                                const newText = await response.clone().text();
+                                shouldUpdate = cachedText !== newText;
+                            }
+                        }
+                    } else {
+                        // Файл не был закэширован ранее - это новый файл
+                        newFilesFound++;
+                        console.log(`Найден новый файл: ${file}`);
+                    }
+                    
+                    if (shouldUpdate) {
+                        await tempCache.put(absoluteUrl, response);
+                        filesUpdated++;
+                        console.log(`Файл обновлен: ${file}`);
+                    } else {
+                        // Копируем из старого кэша
+                        const cachedResponse = await caches.match(absoluteUrl);
+                        if (cachedResponse) {
+                            await tempCache.put(absoluteUrl, cachedResponse);
+                        }
+                        console.log(`Файл не изменился: ${file}`);
+                    }
                 } else {
-                    console.warn(`Service Worker: Не удалось загрузить файл: ${file}, статус: ${response.status}`);
+                    console.warn(`Не удалось загрузить файл: ${file}, статус: ${response.status}`);
+                    // Копируем из старого кэша, если есть
+                    const cachedResponse = await caches.match(absoluteUrl);
+                    if (cachedResponse) {
+                        await tempCache.put(absoluteUrl, cachedResponse);
+                    }
                 }
             } catch (error) {
-                console.error(`Service Worker: Ошибка при загрузке файла ${file}:`, error);
+                console.error(`Ошибка при загрузке файла ${file}:`, error);
+                // Копируем из старого кэша, если есть
+                const cachedResponse = await caches.match(absoluteUrl);
+                if (cachedResponse) {
+                    await tempCache.put(absoluteUrl, cachedResponse);
+                }
             }
         }
 
-        // Получаем все имена кэшей
-        const cacheNames = await caches.keys();
-        
-        // Удаляем ВСЕ старые кэши (включая текущий)
-        console.log('Service Worker: Удаление всех старых кэшей');
-        await Promise.all(
-            cacheNames.map(cacheName => {
-                if (cacheName !== tempCacheName) {
-                    console.log('Service Worker: Удаление кэша:', cacheName);
-                    return caches.delete(cacheName);
-                }
-            })
-        );
+        // Динамическое обнаружение новых файлов
+        try {
+            // Получаем все файлы, которые уже есть в кэше
+            const allCachedRequests = await caches.keys().then(cacheNames => {
+                return Promise.all(cacheNames.map(cacheName => caches.open(cacheName).then(cache => cache.keys())));
+            }).then(requestArrays => requestArrays.flat());
 
-        // Переименовываем временный кэш в основной
-        await caches.open(CACHE_NAME);
-        const mainCache = await caches.open(CACHE_NAME);
-        
-        // Копируем содержимое временного кэша в основной
-        const tempCache2 = await caches.open(tempCacheName);
-        const requests = await tempCache2.keys();
-        
-        console.log('Service Worker: Копирование файлов во временный кэш в основной');
-        for (const request of requests) {
-            try {
-                const response = await tempCache2.match(request);
-                if (response) {
-                    await mainCache.put(request, response);
-                    console.log('Service Worker: Скопирован файл:', request.url);
+            // Проверяем каждый файл из кэша на наличие обновлений
+            for (const cachedRequest of allCachedRequests) {
+                try {
+                    const response = await fetch(cachedRequest.url, { 
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const cachedResponse = await caches.match(cachedRequest.url);
+                        let shouldUpdate = true;
+                        
+                        if (cachedResponse) {
+                            const cachedSize = await cachedResponse.clone().blob().then(b => b.size);
+                            const newSize = await response.clone().blob().then(b => b.size);
+                            
+                            if (cachedSize === newSize) {
+                                const cachedEtag = cachedResponse.headers.get('etag');
+                                const newEtag = response.headers.get('etag');
+                                
+                                if (cachedEtag && newEtag && cachedEtag === newEtag) {
+                                    shouldUpdate = false;
+                                }
+                            }
+                        } else {
+                            // Файл не был закэширован ранее - это новый файл
+                            newFilesFound++;
+                            console.log(`Найден новый файл: ${cachedRequest.url}`);
+                        }
+                        
+                        if (shouldUpdate) {
+                            await tempCache.put(cachedRequest.url, response);
+                            filesUpdated++;
+                            console.log(`Файл обновлен: ${cachedRequest.url}`);
+                        } else {
+                            const cachedResponse = await caches.match(cachedRequest.url);
+                            if (cachedResponse) {
+                                await tempCache.put(cachedRequest.url, cachedResponse);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error(`Ошибка при проверке файла ${cachedRequest.url}:`, error);
                 }
-            } catch (error) {
-                console.error(`Service Worker: Ошибка при копировании файла ${request.url}:`, error);
             }
+        } catch (error) {
+            console.log('Ошибка при динамическом обнаружении файлов:', error);
         }
-        
-        // Удаляем временный кэш
-        await caches.delete(tempCacheName);
-        console.log('Service Worker: Временный кэш удален');
-        
-        console.log('Service Worker: Кэш успешно перестроен! Теперь содержит ТОЛЬКО файлы из version.json');
-        
-        // Уведомляем клиента об обновлении
-        self.clients.matchAll().then(clients => {
-            clients.forEach(client => {
-                client.postMessage({
-                    type: 'UPDATE_AVAILABLE',
-                    version: serverVersion.version
+
+        if (filesUpdated > 0) {
+            console.log(`Обновлено файлов: ${filesUpdated}`);
+            
+            // Получаем все имена кэшей
+            const cacheNames = await caches.keys();
+            
+            // Удаляем старые кэши
+            await Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== tempCacheName) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+
+            // Переименовываем временный кэш в основной
+            await caches.open(CACHE_NAME);
+            const mainCache = await caches.open(CACHE_NAME);
+            
+            // Копируем содержимое временного кэша в основной
+            const tempCache2 = await caches.open(tempCacheName);
+            const requests = await tempCache2.keys();
+            
+            for (const request of requests) {
+                try {
+                    const response = await tempCache2.match(request);
+                    if (response) {
+                        await mainCache.put(request, response);
+                    }
+                } catch (error) {
+                    console.error(`Ошибка при копировании файла ${request.url}:`, error);
+                }
+            }
+            
+            // Удаляем временный кэш
+            await caches.delete(tempCacheName);
+            
+            console.log('Кэш успешно обновлен');
+            
+            // Уведомляем клиента об обновлении
+            self.clients.matchAll().then(clients => {
+                clients.forEach(client => {
+                    client.postMessage({
+                        type: 'UPDATE_AVAILABLE',
+                        filesUpdated: filesUpdated
+                    });
                 });
             });
-        });
+        } else {
+            console.log('Нет обновлений для файлов');
+            // Удаляем временный кэш
+            await caches.delete(tempCacheName);
+        }
         
     } catch (error) {
-        console.error('Service Worker: Ошибка при перестройке кэша:', error);
+        console.error('Ошибка при обновлении кэша:', error);
         // В случае ошибки удаляем временный кэш
         const cacheNames = await caches.keys();
         cacheNames.forEach(cacheName => {
@@ -263,3 +291,54 @@ async function updateCache(serverVersion) {
         });
     }
 }
+
+// Проверка обновлений при активации
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        checkForUpdates()
+    );
+});
+
+// Функция проверки обновлений
+async function checkForUpdates() {
+    try {
+        console.log('Проверка обновлений...');
+        
+        // Проверяем наличие сети
+        if (!navigator.onLine) {
+            console.log('Нет подключения к сети, работа в офлайн режиме');
+            return;
+        }
+        
+        // Пытаемся обновить кэш
+        await updateCache();
+        
+    } catch (error) {
+        console.log('Проверка обновлений не удалась (режим офлайн):', error);
+    }
+}
+
+// Проверка обновлений при каждом запросе (если есть сеть)
+self.addEventListener('fetch', (event) => {
+    // Проверяем, есть ли сеть и не является ли запрос кэшированным
+    if (navigator.onLine && event.request.method === 'GET') {
+        // Проверяем обновления раз в 10 минут
+        const now = Date.now();
+        const lastCheck = self.registration?.lastCheck || 0;
+        
+        if (now - lastCheck > 10 * 60 * 1000) {
+            // Обновляем метку времени
+            self.registration.lastCheck = now;
+            
+            // Асинхронно проверяем обновления
+            event.waitUntil(updateCache());
+        }
+    }
+});
+
+// Обработка сообщений от клиента
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'CHECK_FOR_UPDATES') {
+        event.waitUntil(updateCache());
+    }
+});

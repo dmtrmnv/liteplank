@@ -1251,97 +1251,41 @@
             async setupServiceWorker() {
                 if ('serviceWorker' in navigator) {
                     try {
-                        console.log('Приложение: Регистрация Service Worker...');
                         const registration = await navigator.serviceWorker.register('service-worker.js');
-                        console.log('Приложение: SW зарегистрирован:', registration.scope);
-                        
-                        // Ждем активации SW
-                        if (registration.waiting) {
-                            console.log('Приложение: SW уже активен');
-                        } else if (registration.installing) {
-                            console.log('Приложение: SW устанавливается');
-                            registration.installing.addEventListener('statechange', (event) => {
-                                if (event.target.state === 'installed') {
-                                    console.log('Приложение: SW установлен');
-                                } else if (event.target.state === 'activated') {
-                                    console.log('Приложение: SW активирован');
-                                    this.checkVersionJson();
-                                }
-                            });
-                        } else if (registration.active) {
-                            console.log('Приложение: SW активен');
-                            this.checkVersionJson();
-                        }
+                        console.log('SW registered');
                         
                         // Обработка сообщений от сервис-воркера
                         navigator.serviceWorker.addEventListener('message', (event) => {
                             if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-                                this.handleUpdateAvailable(event.data.version);
+                                this.handleUpdateAvailable(event.data.filesUpdated);
                             }
                         });
                         
-                    } catch (error) {
-                        console.log('Приложение: Ошибка регистрации SW:', error);
-                    }
-                } else {
-                    console.log('Приложение: Service Worker не поддерживается');
-                }
-            }
-
-            async checkVersionJson() {
-                try {
-                    console.log('Приложение: Проверка version.json...');
-                    
-                    // Принудительный запрос с уникальным параметром для обхода кэша
-                    const timestamp = Date.now();
-                    const response = await fetch(`version.json?t=${timestamp}`, { 
-                        cache: 'no-cache',
-                        headers: { 
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache',
-                            'If-Modified-Since': '0'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const versionData = await response.json();
-                        console.log('Приложение: version.json загружен, версия:', versionData.version);
-                        console.log('Приложение: Ответ от сервера:', response.status, response.headers.get('ETag'));
-                    } else {
-                        console.log('Приложение: version.json не найден на сервере, статус:', response.status);
-                    }
-                } catch (error) {
-                    console.log('Приложение: Ошибка при проверке version.json:', error);
-                }
-            }
-
-            handleUpdateAvailable(newVersion) {
-                console.log('Service Worker сообщает об обновлении:', newVersion);
-                this.showNotification('Приложение обновлено до версии ' + newVersion, 'success');
-                
-                // Принудительная проверка кэша после обновления
-                setTimeout(() => {
-                    console.log('Приложение: Проверка кэша после обновления...');
-                    this.checkCacheStatus();
-                    window.location.reload();
-                }, 1000);
-            }
-
-            async checkCacheStatus() {
-                try {
-                    if ('caches' in window) {
-                        const cacheNames = await caches.keys();
-                        console.log('Приложение: Доступные кэши:', cacheNames);
+                        // Проверка обновлений при загрузке
+                        this.checkForUpdates();
                         
-                        for (const cacheName of cacheNames) {
-                            const cache = await caches.open(cacheName);
-                            const keys = await cache.keys();
-                            console.log(`Приложение: Файлы в кэше ${cacheName}:`, keys.map(req => req.url));
-                        }
+                    } catch (error) {
+                        console.log('SW registration failed:', error);
                     }
-                } catch (error) {
-                    console.log('Приложение: Ошибка проверки кэша:', error);
                 }
+            }
+
+            async checkForUpdates() {
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'CHECK_FOR_UPDATES'
+                    });
+                }
+            }
+
+            handleUpdateAvailable(filesUpdated) {
+                console.log('Service Worker сообщает об обновлении:', filesUpdated, 'файлов');
+                this.showNotification(`Приложение обновлено (${filesUpdated} файлов)`, 'success');
+                
+                // Перезагружаем страницу для применения обновлений
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
             }
         }
 
