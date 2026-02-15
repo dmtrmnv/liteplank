@@ -6,6 +6,9 @@ const urlsToCache = [
     '/liteplank/style.css',
     '/liteplank/manifest.json',
     '/liteplank/icon-192.png',
+    '/liteplank/locales/en.json',
+    '/liteplank/locales/languages.json',
+    '/liteplank/locales/ru.json',
     '/liteplank/icon-512.png'
 ];
 
