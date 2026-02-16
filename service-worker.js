@@ -3,7 +3,7 @@
 const CACHE_NAME = 'liteplank-v2.1.1';
 const baseUrl = self.location.origin;
 const urlsToCache = [
-    baseUrl + '/',
+    baseUrl + '/liteplank/',
     baseUrl + '/index.html',
     baseUrl + '/style.css',
     baseUrl + '/manifest.json',
@@ -90,4 +90,5 @@ self.addEventListener('message', (event) => {
     if (event.data?.type === 'SKIP_WAITING') {
         self.skipWaiting?.();
     }
+
 });
