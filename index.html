@@ -181,7 +181,7 @@
                 </div>
             </div>
             
-            <div class="tabs" id="tabs">
+            <div class="tabs" id="desktop-tabs">
                 <button class="tab-btn active" data-tab="timer">
                     <span class="tab-icon">⏱️</span>
                     <span class="tab-text">Таймер</span>
@@ -525,6 +525,13 @@
 
                             <div class="setting-item">
                                 <label class="setting-label">
+                                    <span>Время по умолчанию (сек)</span>
+                                    <input type="number" id="default-duration" class="setting-input" min="1" max="3600" value="60">
+                                </label>
+                            </div>
+
+                            <div class="setting-item">
+                                <label class="setting-label">
                                     <span>Звуковой сигнал</span>
                                     <input type="checkbox" id="sound-enabled" checked class="setting-checkbox">
                                 </label>
@@ -595,6 +602,7 @@
                     duration: 60,
                     timer: null
                 };
+                this.audioContext = null;
                 
                 this.init();
             }
@@ -669,20 +677,27 @@
                 const clearHistoryBtn = document.getElementById('clear-history-btn');
                 if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () => this.clearHistory());
 
+                // Делегирование событий для истории тренировок
+                const historyList = document.getElementById('history-list');
+                if (historyList) {
+                    historyList.addEventListener('click', (e) => {
+                        const deleteBtn = e.target.closest('[data-action="delete-session"]');
+                        if (deleteBtn) {
+                            const historyItem = deleteBtn.closest('.history-item');
+                            if (historyItem) {
+                                const index = parseInt(historyItem.dataset.sessionIndex);
+                                this.deleteSession(index);
+                            }
+                        }
+                    });
+                }
+
                 // Настройки пользовательских параметров
                 const saveUserSettingsBtn = document.getElementById('save-user-settings-btn');
                 if (saveUserSettingsBtn) saveUserSettingsBtn.addEventListener('click', () => this.saveUserSettings());
                 
-                // Автоматическое пересчет при изменении параметров
-                const userGender = document.getElementById('userGender');
-                const userWeight = document.getElementById('userWeight');
-                const userHeight = document.getElementById('userHeight');
-                const userAge = document.getElementById('userAge');
-                
-                if (userGender) userGender.addEventListener('change', () => this.recalculateHistory());
-                if (userWeight) userWeight.addEventListener('change', () => this.recalculateHistory());
-                if (userHeight) userHeight.addEventListener('change', () => this.recalculateHistory());
-                if (userAge) userAge.addEventListener('change', () => this.recalculateHistory());
+                // Удаляем все обработчики change для параметров
+                // Пересчет истории выполняется только при сохранении настроек
 
                 // Настройки
                 const defaultDuration = document.getElementById('default-duration');
@@ -734,6 +749,9 @@
                 this.currentSession.isRunning = true;
                 this.updateTimerControls();
                 
+                // Инициализируем AudioContext при первом взаимодействии пользователя
+                this.initializeAudioContext();
+                
                 this.currentSession.timer = setInterval(() => {
                     if (this.currentSession.timeLeft > 0) {
                         this.currentSession.timeLeft--;
@@ -743,6 +761,21 @@
                     }
                 }, 1000);
             }
+
+            initializeAudioContext() {
+    if (!this.audioContext) {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('[Audio] AudioContext успешно инициализирован');
+        } catch (e) {
+            console.error('[Audio] Ошибка инициализации AudioContext:', e);
+            // Опционально: отключаем звук в настройках при ошибке
+            this.settings.soundEnabled = false;
+            this.saveSettings();
+            this.showNotification('Аудио недоступно. Звук отключен.', 'warning');
+        }
+    }
+}
 
             pauseTimer() {
                 this.currentSession.isRunning = false;
@@ -805,19 +838,26 @@
                 if (!this.settings.soundEnabled) return;
                 
                 try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
+                    // Проверяем наличие AudioContext
+                    if (!this.audioContext) return;
+                    
+                    // Проверяем, нужно ли разрешение на воспроизведение звука
+                    if (this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                    }
+                    
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
                     
                     oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
+                    gainNode.connect(this.audioContext.destination);
                     
-                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
                     
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.5);
+                    oscillator.start(this.audioContext.currentTime);
+                    oscillator.stop(this.audioContext.currentTime + 0.5);
                 } catch (e) {
                     // Игнорируем ошибки аудио
                 }
@@ -866,14 +906,14 @@
                 // Показываем последние 10 тренировок
                 const recentHistory = this.history.slice(0, 10);
                 historyList.innerHTML = recentHistory.map((session, index) => `
-                    <div class="history-item">
+                    <div class="history-item" data-session-index="${index}">
                         <div class="session-info">
                             <div class="session-date">${this.formatDate(session.date)}</div>
                             <div class="session-duration">${this.formatTime(session.duration)}</div>
                             <div class="session-calories">${session.calories.toFixed(1)} ккал</div>
                         </div>
                         <div class="session-actions">
-                            <button class="btn-delete" onclick="litePlank.deleteSession(${index})" title="Удалить тренировку">🗑️</button>
+                            <button class="btn-delete" data-action="delete-session" title="Удалить тренировку">🗑️</button>
                         </div>
                     </div>
                 `).join('');
@@ -924,120 +964,6 @@
                 }
             }
 
-            updateProgress() {
-                // Обновляем статистику
-                const totalSessions = this.history.length;
-                const totalTime = this.history.reduce((sum, session) => sum + session.duration, 0);
-                const avgTime = totalSessions > 0 ? Math.round(totalTime / totalSessions) : 0;
-
-                document.getElementById('progress-sessions').textContent = totalSessions;
-                document.getElementById('progress-total').textContent = this.formatTime(totalTime);
-                document.getElementById('progress-avg').textContent = this.formatTime(avgTime);
-
-                // Обновляем лучший результат
-                const bestSession = this.history.length > 0 ? 
-                    this.history.reduce((best, current) => current.duration > best.duration ? current : best) : null;
-                
-                document.getElementById('best-result').textContent = bestSession ? this.formatTime(bestSession.duration) : '0';
-                document.getElementById('best-date').textContent = bestSession ? this.formatDate(bestSession.date) : '-';
-
-                // Обновляем тренд
-                this.updateTrend();
-
-                // Обновляем рекомендации
-                this.updateRecommendations();
-
-                // Рисуем график
-                this.renderChart();
-            }
-
-            updateTrend() {
-                let trend = 'neutral';
-                let trendValue = 0;
-
-                if (this.history.length >= 3) {
-                    const recent = this.history.slice(-5);
-                    const older = this.history.slice(-10, -5);
-                    
-                    if (older.length > 0) {
-                        const recentAvg = recent.reduce((sum, s) => sum + s.duration, 0) / recent.length;
-                        const olderAvg = older.reduce((sum, s) => sum + s.duration, 0) / older.length;
-                        const diff = recentAvg - olderAvg;
-                        const diffPercent = (diff / olderAvg) * 100;
-                        
-                        if (diffPercent > 10) trend = 'improving';
-                        else if (diffPercent < -10) trend = 'declining';
-                        else trend = 'stable';
-                        
-                        trendValue = Math.round(recentAvg);
-                    }
-                }
-
-                const indicator = document.getElementById('trend-indicator');
-                const value = document.getElementById('trend-value');
-
-                indicator.className = 'trend-indicator';
-                indicator.textContent = this.getTrendText(trend);
-                indicator.classList.add(`trend-${trend}`);
-                value.textContent = this.formatTime(trendValue);
-            }
-
-            getTrendText(trend) {
-                switch (trend) {
-                    case 'improving': return '📈 Улучшается';
-                    case 'declining': return '📉 Снижается';
-                    case 'stable': return '➡️ Стабильно';
-                    default: return '❓ Нет данных';
-                }
-            }
-
-            updateRecommendations() {
-                const container = document.getElementById('recommendations');
-                
-                if (this.history.length === 0) {
-                    container.innerHTML = '<div class="recommendation">🎯 Начните первую тренировку!</div>';
-                } else if (this.history.length < 5) {
-                    container.innerHTML = '<div class="recommendation">📈 Продолжайте регулярно тренироваться</div>';
-                } else {
-                    const recent = this.history.slice(-5);
-                    const older = this.history.slice(-10, -5);
-                    
-                    if (older.length > 0) {
-                        const recentAvg = recent.reduce((sum, s) => sum + s.duration, 0) / recent.length;
-                        const olderAvg = older.reduce((sum, s) => sum + s.duration, 0) / older.length;
-                        const diff = recentAvg - olderAvg;
-                        const diffPercent = (diff / olderAvg) * 100;
-                        
-                        if (diffPercent > 10) {
-                            container.innerHTML = '<div class="recommendation">🚀 Отлично! Вы улучшаетесь!</div>';
-                        } else if (diffPercent < -10) {
-                            container.innerHTML = '<div class="recommendation">🔄 Попробуйте увеличить время</div>';
-                        } else {
-                            container.innerHTML = '<div class="recommendation">💪 Поддерживайте текущий уровень</div>';
-                        }
-                    } else {
-                        container.innerHTML = '<div class="recommendation">💪 Поддерживайте текущий уровень</div>';
-                    }
-                }
-            }
-
-            renderChart() {
-                const container = document.getElementById('chart-container');
-                const recentSessions = this.history.slice(-10).reverse();
-                
-                if (recentSessions.length === 0) {
-                    container.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 2rem;">Нет данных для отображения</div>';
-                    return;
-                }
-
-                const maxDuration = Math.max(...recentSessions.map(s => s.duration));
-                
-                container.innerHTML = recentSessions.map((session, index) => `
-                    <div class="chart-bar" style="height: ${(session.duration / maxDuration) * 100}%" title="${this.formatDate(session.date)}: ${this.formatTime(session.duration)}">
-                        <div class="bar-label">${this.formatTime(session.duration)}</div>
-                    </div>
-                `).join('');
-            }
 
             toggleTheme() {
                 this.settings.darkMode = !this.settings.darkMode;
@@ -1160,11 +1086,19 @@
                     return;
                 }
                 
+                // Загружаем предыдущие настройки для сравнения
+                const previousSettings = JSON.parse(localStorage.getItem('liteplank-user-settings') || '{}');
+                
+                // Проверяем, изменился ли вес (только вес влияет на расчет калорий)
+                const weightChanged = previousSettings.weight !== userSettings.weight;
+                
                 localStorage.setItem('liteplank-user-settings', JSON.stringify(userSettings));
                 this.showNotification('Параметры пользователя сохранены', 'success');
                 
-                // Пересчитываем историю с новыми параметрами
-                this.recalculateHistory();
+                // Пересчитываем историю только если изменился вес
+                if (weightChanged) {
+                    this.recalculateHistory();
+                }
             }
 
             loadUserSettings() {
@@ -1196,6 +1130,12 @@
             }
 
             recalculateHistory() {
+                // Проверяем корректность веса перед пересчетом
+                const weight = parseFloat(document.getElementById('userWeight')?.value || 70);
+                if (isNaN(weight) || weight <= 0) {
+                    return;
+                }
+                
                 // Пересчитываем калории для всех тренировок с новыми параметрами
                 this.history.forEach(session => {
                     session.calories = this.calculateCalories(session.duration);
@@ -1254,15 +1194,31 @@
                         const registration = await navigator.serviceWorker.register('service-worker.js');
                         console.log('SW registered');
                         
-                        // Обработка сообщений от сервис-воркера
-                        navigator.serviceWorker.addEventListener('message', (event) => {
-                            if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-                                this.handleUpdateAvailable(event.data.filesUpdated);
-                            }
+                        // Сохраняем ссылку на нового воркера
+                        let newWorker = null;
+                        
+                        // Стандартный механизм обнаружения обновлений
+                        registration.addEventListener('updatefound', () => {
+                            newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // Доступно обновление
+                                    this.handleUpdateAvailable(newWorker);
+                                }
+                            });
                         });
                         
-                        // Проверка обновлений при загрузке
-                        this.checkForUpdates();
+                        // Проверка активного сервис-воркера на наличие обновлений
+                        if (registration.waiting) {
+                            this.handleUpdateAvailable(registration.waiting);
+                        }
+                        
+                        // Автоматическая перезагрузка после активации нового воркера
+                        const reloadHandler = () => {
+                            navigator.serviceWorker.removeEventListener('controllerchange', reloadHandler);
+                            window.location.reload();
+                        };
+                        navigator.serviceWorker.addEventListener('controllerchange', reloadHandler);
                         
                     } catch (error) {
                         console.log('SW registration failed:', error);
@@ -1270,22 +1226,22 @@
                 }
             }
 
-            async checkForUpdates() {
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'CHECK_FOR_UPDATES'
-                    });
+            handleUpdateAvailable(worker) {
+                // Защита от вызова без параметра
+                if (!worker) {
+                    console.warn('handleUpdateAvailable вызван без параметра worker');
+                    return;
                 }
-            }
-
-            handleUpdateAvailable(filesUpdated) {
-                console.log('Service Worker сообщает об обновлении:', filesUpdated, 'файлов');
-                this.showNotification(`Приложение обновлено (${filesUpdated} файлов)`, 'success');
                 
-                // Перезагружаем страницу для применения обновлений
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
+                console.log('Service Worker сообщает об обновлении');
+                this.showNotification('Доступно обновление приложения', 'info');
+                
+                // Запрашиваем подтверждение пользователя перед перезагрузкой
+                if (confirm('Доступно обновление приложения. Применить обновление?')) {
+                    // Активируем нового сервис-воркера
+                    worker.postMessage({ type: 'SKIP_WAITING' });
+                    // Перезагрузка произойдёт автоматически через controllerchange
+                }
             }
         }
 
