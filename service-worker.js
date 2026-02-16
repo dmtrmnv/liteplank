@@ -1,15 +1,16 @@
 // LitePlank Service Worker - Версионированная система кэширования
 // Версия: liteplank-v2.1.2
-const CACHE_NAME = 'liteplank-v2.1.2';
-const baseUrl = self.location.origin;
+const CACHE_NAME = 'liteplank-v2.1.3';
+const baseUrl = self.location.origin + '/liteplank';
 const urlsToCache = [
-    baseUrl + '/liteplank/',
+    baseUrl + '/',
     baseUrl + '/index.html',
-    baseUrl + '/style.css',
+    baseUrl + '/style.css', 
     baseUrl + '/manifest.json',
     baseUrl + '/icon-192.png',
     baseUrl + '/icon-512.png'
 ];
+
 
 // Установка Service Worker
 self.addEventListener('install', (event) => {
@@ -92,4 +93,5 @@ self.addEventListener('message', (event) => {
     }
 
 });
+
 
