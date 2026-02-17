@@ -1,0 +1,107 @@
+{
+"app": {
+"title": "LitePlank - Plank Tracker",
+"description": "PWA application for plank workouts",
+"loading": "Loading...",
+"brand": {
+"title": "LitePlank",
+"subtitle": "Plank Tracker"
+}
+},
+"tabs": {
+"timer": "Timer",
+"history": "History",
+"settings": "Settings"
+},
+"theme": {
+"dark": "Dark Theme",
+"light": "Light Theme"
+},
+"language": {
+"title": "Language",
+"ru": "Русский",
+"en": "English"
+},
+"timer": {
+"start": "Start",
+"pause": "Pause",
+"finish": "Finish",
+"reset": "Reset",
+"duration": "Time (sec)"
+},
+"history": {
+"title": "Workout History",
+"totalSessions": "Total workouts:",
+"totalTime": "Total time:",
+"totalCalories": "Calories burned:",
+"totalWeight": "Kg held:",
+"avgTime": "Average time:",
+"hint": "Calculation: Weight × Number of workouts",
+"emptyState": "Workout history is empty",
+"emptyHint": "Start your first workout to see results here",
+"clearHistory": "Clear History",
+"deleteSession": "Delete workout"
+},
+"settings": {
+"title": "Settings",
+"subtitle": "Personalize your application",
+"basicSettings": "⚙️ Basic Settings",
+"gender": "Gender",
+"genderMale": "Male",
+"genderFemale": "Female",
+"weight": "Weight (kg)",
+"height": "Height (cm)",
+"age": "Age",
+"saveSettings": "💾 Save Parameters",
+"defaultDuration": "Default Time (sec)",
+"soundEnabled": "Sound Signal",
+"vibrationEnabled": "Vibration",
+"data": "💾 Data",
+"exportData": "Export Data",
+"importData": "Import Data",
+"exportInfo": "Export will save all your workouts and settings to a JSON file.",
+"importInfo": "Import will replace all current data with data from the file.",
+"reset": "🔧 Reset",
+"clearAll": "Clear All Data",
+"resetSettings": "Reset Settings",
+"warning": "Warning:",
+"clearWarning": "Clearing data will delete all workout history and reset settings.",
+"cannotUndo": "This action cannot be undone."
+},
+"notifications": {
+"info": "Information",
+"success": "Success",
+"error": "Error",
+"warning": "Warning",
+"sessionDeleted": "Workout deleted",
+"historyCleared": "Workout history cleared",
+"allDataCleared": "All data deleted",
+"settingsReset": "Settings reset",
+"userSettingsSaved": "User parameters saved",
+"invalidInput": "Please enter valid weight, height, and age values",
+"audioUnavailable": "Audio unavailable. Sound disabled.",
+"updateAvailable": "App update available",
+"dataExported": "Data successfully exported!",
+"dataImported": "Data successfully imported!",
+"invalidFile": "Invalid file format",
+"fileReadError": "Error reading file",
+"languageChanged": "Language changed to {{lang}}"
+},
+"confirmations": {
+"deleteSession": "Delete this workout?",
+"clearHistory": "Clear all workout history?",
+"clearAllData": "Are you sure you want to delete all data? This action cannot be undone.",
+"importData": "This will replace all current data. Continue?",
+"updateApp": "App update available. Apply update?"
+},
+"time": {
+"seconds": "sec",
+"minutes": "min",
+"second": "sec",
+"minute": "min"
+},
+"units": {
+"kg": "kg",
+"kcal": "kcal"
+}
+}

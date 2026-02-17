@@ -1,1255 +1,368 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>LitePlank - Планка трекер</title>
-    <meta name="description" content="PWA приложение для тренировок планки">
-    <meta name="theme-color" content="#42b983">
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" href="icon-192.png">
-    
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <!-- Preload styles -->
-    <link rel="preload" href="style.css?v=1.0.3" as="style">
-    
-    <style>
-        /* Встроенные базовые стили для быстрой загрузки */
-        :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --accent: #42b983;
-            --accent-hover: #36a873;
-            --danger: #dc3545;
-            --warning: #ffc107;
-            --border: #e9ecef;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        [data-theme="dark"] {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --accent: #42d392;
-            --accent-hover: #36c180;
-            --danger: #ff6b6b;
-            --warning: #ffd277;
-            --border: #404040;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Скрытие контента до загрузки JS */
-        #app { display: none; }
-        .loading { display: flex; }
-
-        /* Всплывающие уведомления */
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-
-        .notification {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 250px;
-            animation: slideIn 0.3s ease-out;
-            pointer-events: auto;
-        }
-
-        .notification-content {
-            flex: 1;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .notification-close {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        .notification-close:hover {
-            background: var(--border);
-            color: var(--text-primary);
-        }
-
-        .notification-info {
-            border-left: 4px solid var(--accent);
-        }
-
-        .notification-success {
-            border-left: 4px solid var(--accent);
-        }
-
-        .notification-error {
-            border-left: 4px solid var(--danger);
-        }
-
-        .notification-warning {
-            border-left: 4px solid var(--warning);
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .notification-container {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-            }
-            
-            .notification {
-                min-width: auto;
-                width: 100%;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n="app.title">LitePlank - Планка трекер</title>
+<meta name="description" data-i18n-content="app.description" content="PWA приложение для тренировок планки">
+<meta name="theme-color" content="#42b983">
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<!-- Apple Touch Icon -->
+<link rel="apple-touch-icon" href="icon-192.png">
+<!-- Preload styles -->
+<link rel="preload" href="style.css?v=1.0.3" as="style">
+<style>
+/* Встроенные базовые стили для быстрой загрузки */
+:root {
+--bg-primary: #ffffff;
+--bg-secondary: #f8f9fa;
+--text-primary: #212529;
+--text-secondary: #6c757d;
+--accent: #42b983;
+--accent-hover: #36a873;
+--danger: #dc3545;
+--warning: #ffc107;
+--border: #e9ecef;
+--shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+[data-theme="dark"] {
+--bg-primary: #1a1a1a;
+--bg-secondary: #2d2d2d;
+--text-primary: #ffffff;
+--text-secondary: #b0b0b0;
+--accent: #42d392;
+--accent-hover: #36c180;
+--danger: #ff6b6b;
+--warning: #ffd277;
+--border: #404040;
+--shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+background-color: var(--bg-primary);
+color: var(--text-primary);
+transition: all 0.3s ease;
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+}
+/* Скрытие контента до загрузки JS */
+#app { display: none; }
+.loading { display: flex; }
+/* Всплывающие уведомления */
+.notification-container {
+position: fixed;
+top: 20px;
+right: 20px;
+z-index: 1000;
+display: flex;
+flex-direction: column;
+gap: 10px;
+pointer-events: none;
+}
+.notification {
+background: var(--bg-secondary);
+border: 1px solid var(--border);
+border-radius: 8px;
+padding: 12px 16px;
+box-shadow: var(--shadow);
+display: flex;
+align-items: center;
+gap: 12px;
+min-width: 250px;
+animation: slideIn 0.3s ease-out;
+pointer-events: auto;
+}
+.notification-content {
+flex: 1;
+font-size: 14px;
+line-height: 1.4;
+}
+.notification-close {
+background: none;
+border: none;
+font-size: 18px;
+color: var(--text-secondary);
+cursor: pointer;
+padding: 0;
+width: 24px;
+height: 24px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 4px;
+transition: all 0.2s ease;
+}
+.notification-close:hover {
+background: var(--border);
+color: var(--text-primary);
+}
+.notification-info {
+border-left: 4px solid var(--accent);
+}
+.notification-success {
+border-left: 4px solid var(--accent);
+}
+.notification-error {
+border-left: 4px solid var(--danger);
+}
+.notification-warning {
+border-left: 4px solid var(--warning);
+}
+@keyframes slideIn {
+from {
+transform: translateX(100%);
+opacity: 0;
+}
+to {
+transform: translateX(0);
+opacity: 1;
+}
+}
+@media (max-width: 768px) {
+.notification-container {
+top: 10px;
+right: 10px;
+left: 10px;
+}
+.notification {
+min-width: auto;
+width: 100%;
+}
+}
+</style>
 </head>
 <body>
-    <!-- Элемент загрузки -->
-    <div id="loading" class="loading" style="display: none; align-items: center; justify-content: center; height: 100vh; width: 100%;">
-        <div style="text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 1rem;">🫁</div>
-            <div style="font-size: 1.5rem; font-weight: bold; color: var(--accent);">LitePlank</div>
-            <div style="color: var(--text-secondary); margin-top: 0.5rem;">Загрузка...</div>
-        </div>
-    </div>
-
-    <!-- Основное приложение -->
-    <div id="app">
-        <!-- Навигация -->
-        <nav id="navbar" class="navbar">
-            <div class="brand">
-                <div class="brand-logo">🫁</div>
-                <div class="brand-text">
-                    <div class="brand-title">LitePlank</div>
-                    <div class="brand-subtitle">Планка трекер</div>
-                </div>
-            </div>
-            
-            <div class="tabs" id="desktop-tabs">
-                <button class="tab-btn active" data-tab="timer">
-                    <span class="tab-icon">⏱️</span>
-                    <span class="tab-text">Таймер</span>
-                </button>
-                <button class="tab-btn" data-tab="history">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-text">История</span>
-                </button>
-                <button class="tab-btn" data-tab="instructions">
-                    <span class="tab-icon">📖</span>
-                    <span class="tab-text">Инструкции</span>
-                </button>
-                <button class="tab-btn" data-tab="settings">
-                    <span class="tab-icon">⚙️</span>
-                    <span class="tab-text">Настройки</span>
-                </button>
-            </div>
-            
-            <div class="actions">
-                <button class="theme-btn" id="theme-toggle" title="Темная тема">
-                    <span>🌙</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Мобильное меню внизу -->
-        <nav id="mobile-nav" class="mobile-nav">
-            <div class="tabs" id="tabs">
-                <button class="tab-btn active" data-tab="timer">
-                    <span class="tab-icon">⏱️</span>
-                    <span class="tab-text">Таймер</span>
-                </button>
-                <button class="tab-btn" data-tab="history">
-                    <span class="tab-icon">📊</span>
-                    <span class="tab-text">История</span>
-                </button>
-                <button class="tab-btn" data-tab="instructions">
-                    <span class="tab-icon">📖</span>
-                    <span class="tab-text">Инструкции</span>
-                </button>
-                <button class="tab-btn" data-tab="settings">
-                    <span class="tab-icon">⚙️</span>
-                    <span class="tab-text">Настройки</span>
-                </button>
-            </div>
-        </nav>
-
-        <!-- Основное содержимое -->
-        <main class="main-content">
-            <!-- Таймер -->
-            <section id="timer-section" class="section active">
-                <div class="timer-container">
-                    <div class="timer-display">
-                        <div class="time" id="timer-display">01:00</div>
-                    </div>
-                    
-                    <div class="controls">
-                        <button id="start-btn" class="btn btn-start">Старт</button>
-                        <button id="pause-btn" class="btn btn-pause" style="display: none;">Пауза</button>
-                        <button id="finish-btn" class="btn btn-finish" style="display: none;">Завершить</button>
-                        <button id="reset-btn" class="btn btn-reset">Сброс</button>
-                    </div>
-
-                    <div class="settings">
-                        <label>
-                            Время (сек):
-                            <input type="number" id="duration-input" value="60" min="1" max="3600">
-                        </label>
-                    </div>
-                </div>
-            </section>
-
-            <!-- История -->
-            <section id="history-section" class="section">
-                <div class="history-container">
-                    <div class="history-header">
-                        <h2>История тренировок</h2>
-                        <div class="stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Всего тренировок:</span>
-                                <span class="stat-value" id="total-sessions">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Общее время:</span>
-                                <span class="stat-value" id="total-time">0 сек</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Сожжено калорий:</span>
-                                <span class="stat-value" id="total-calories">0 ккал</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Удержано кг:</span>
-                                <span class="stat-value" id="total-weight">0 кг</span>
-                                <span class="stat-hint" title="Расчет: Вес × Количество тренировок">ℹ️</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Среднее время:</span>
-                                <span class="stat-value" id="avg-time">0 сек</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="history-list" id="history-list">
-                        <!-- История будет добавляться здесь -->
-                    </div>
-
-                    <div class="empty-state" id="empty-state">
-                        <p>История тренировок пуста</p>
-                        <p class="hint">Начните первую тренировку, чтобы увидеть здесь результаты</p>
-                    </div>
-
-                    <div class="history-actions">
-                        <button id="clear-history-btn" class="btn-clear">Очистить историю</button>
-                    </div>
-                </div>
-            </section>
-
-
-            <!-- Инструкции -->
-            <section id="instructions-section" class="section">
-                <div class="instructions-container">
-                    <div class="instructions-header">
-                        <h2>Правильная техника планки</h2>
-                        <p class="subtitle">Руководство для эффективных и безопасных тренировок</p>
-                    </div>
-
-                    <div class="instructions-content">
-                        <div class="instruction-section">
-                            <div class="section-title">🎯 Основная техника</div>
-                            <div class="technique-steps">
-                                <div class="step">
-                                    <div class="step-number">1</div>
-                                    <div class="step-content">
-                                        <h3>Исходное положение</h3>
-                                        <p>Встаньте на четвереньки, ладони под плечами, ноги на носках. Тело образует прямую линию от головы до пяток.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="step">
-                                    <div class="step-number">2</div>
-                                    <div class="step-content">
-                                        <h3>Позиция тела</h3>
-                                        <p>Спина прямая, не прогибайте поясницу и не поднимайте таз. Голова в нейтральном положении, смотрите на пол перед собой.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="step">
-                                    <div class="step-number">3</div>
-                                    <div class="step-content">
-                                        <h3>Напряжение мышц</h3>
-                                        <p>Напрягите ягодицы, бедра и пресс. Представьте, что вы натягиваете полотенце между лопатками.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="step">
-                                    <div class="step-number">4</div>
-                                    <div class="step-content">
-                                        <h3>Дыхание</h3>
-                                        <p>Дышите ровно и глубоко через нос. Не задерживайте дыхание. Если сложно - дышите через рот.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="instruction-section">
-                            <div class="section-title">⚠️ Ошибки и как их избежать</div>
-                            <div class="mistakes-grid">
-                                <div class="mistake-card">
-                                    <div class="mistake-icon">❌</div>
-                                    <div class="mistake-content">
-                                        <h3>Прогиб в пояснице</h3>
-                                        <p>Следите за тем, чтобы таз не опускался. Напрягайте ягодицы и нижний пресс.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="mistake-card">
-                                    <div class="mistake-icon">❌</div>
-                                    <div class="mistake-content">
-                                        <h3>Поднятый таз</h3>
-                                        <p>Таз не должен быть выше уровня спины. Тело должно быть прямой линией.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="mistake-card">
-                                    <div class="mistake-icon">❌</div>
-                                    <div class="mistake-content">
-                                        <h3>Опущенная голова</h3>
-                                        <p>Не опускайте голову. Смотрите на пол перед собой, шея в одной линии со спиной.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="mistake-card">
-                                    <div class="mistake-icon">❌</div>
-                                    <div class="mistake-content">
-                                        <h3>Слишком широкая постановка</h3>
-                                        <p>Руки и ноги должны быть на ширине плеч. Слишком широкая постановка снижает эффективность.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="instruction-section">
-                            <div class="section-title">💡 Полезные советы</div>
-                            <div class="tips-list">
-                                <div class="tip">
-                                    <div class="tip-icon">✨</div>
-                                    <div class="tip-content">
-                                        <h3>Начинайте с коротких подходов</h3>
-                                        <p>Начните с 20-30 секунд, постепенно увеличивая время. Главное - правильная техника.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="tip">
-                                    <div class="tip-icon">✨</div>
-                                    <div class="tip-content">
-                                        <h3>Регулярность важнее длительности</h3>
-                                        <p>Лучше стоять 30 секунд каждый день, чем 5 минут раз в неделю.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="tip">
-                                    <div class="tip-icon">✨</div>
-                                    <div class="tip-content">
-                                        <h3>Слушайте свое тело</h3>
-                                        <p>Если чувствуете боль (не мышечное жжение), остановитесь. Боль - это сигнал о неправильной технике.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="tip">
-                                    <div class="tip-icon">✨</div>
-                                    <div class="tip-content">
-                                        <h3>Комбинируйте с другими упражнениями</h3>
-                                        <p>Планка отлично сочетается с отжиманиями, приседаниями и другими упражнениями.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="instruction-section">
-                            <div class="section-title">🛡️ Безопасность и предостережения</div>
-                            <div class="safety-list">
-                                <div class="safety-item">
-                                    <div class="safety-icon">⚠️</div>
-                                    <div class="safety-content">
-                                        <h3>Противопоказания</h3>
-                                        <ul>
-                                            <li>Беременность (после 1 триместра)</li>
-                                            <li>Грыжи и протрузии</li>
-                                            <li>Сильные боли в спине</li>
-                                            <li>Повышенное давление</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                
-                                <div class="safety-item">
-                                    <div class="safety-icon">⚠️</div>
-                                    <div class="safety-content">
-                                        <h3>Когда остановиться</h3>
-                                        <ul>
-                                            <li>Если появляется острая боль</li>
-                                            <li>Если начинает кружиться голова</li>
-                                            <li>Если дыхание становится прерывистым</li>
-                                            <li>Если мышцы начинают сильно дрожать</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="instruction-section">
-                            <div class="section-title">📈 Прогрессия</div>
-                            <div class="progression-grid">
-                                <div class="progression-card">
-                                    <div class="progression-level">Начинающий</div>
-                                    <div class="progression-time">20-60 сек</div>
-                                    <div class="progression-desc">3 подхода по 20-30 секунд</div>
-                                </div>
-                                
-                                <div class="progression-card">
-                                    <div class="progression-level">Средний</div>
-                                    <div class="progression-time">60-120 сек</div>
-                                    <div class="progression-desc">3 подхода по 45-60 секунд</div>
-                                </div>
-                                
-                                <div class="progression-card">
-                                    <div class="progression-level">Продвинутый</div>
-                                    <div class="progression-time">120+ сек</div>
-                                    <div class="progression-desc">3 подхода по 90+ секунд</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Настройки -->
-            <section id="settings-section" class="section">
-                <div class="settings-container">
-                    <div class="settings-header">
-                        <h2>Настройки</h2>
-                        <p class="subtitle">Персонализируйте свое приложение</p>
-                    </div>
-
-                    <div class="settings-content">
-                        <div class="settings-section">
-                            <div class="section-title">⚙️ Основные настройки</div>
-                            
-        <div class="setting-item">
-            <label class="setting-label">
-                <span>Пол</span>
-                <select id="userGender" class="setting-input" style="width: 120px;">
-                    <option value="male">Мужской</option>
-                    <option value="female">Женский</option>
-                </select>
-            </label>
-        </div>
-        <div class="setting-item">
-            <label class="setting-label">
-                <span>Вес (кг)</span>
-                <input type="number" id="userWeight" class="setting-input" min="30" max="200" step="0.1" value="70">
-            </label>
-        </div>
-        <div class="setting-item">
-            <label class="setting-label">
-                <span>Рост (см)</span>
-                <input type="number" id="userHeight" class="setting-input" min="140" max="220" step="1" value="175">
-            </label>
-        </div>
-        <div class="setting-item">
-            <label class="setting-label">
-                <span>Возраст</span>
-                <input type="number" id="userAge" class="setting-input" min="14" max="80" step="1" value="30">
-            </label>
-        </div>
-        <div class="setting-item">
-            <button id="save-user-settings-btn" class="btn btn-primary">💾 Сохранить параметры</button>
-        </div>
-        
-        <!-- Всплывающие виджеты -->
-        <div id="notification-container" class="notification-container"></div>
-
-                            <div class="setting-item">
-                                <label class="setting-label">
-                                    <span>Время по умолчанию (сек)</span>
-                                    <input type="number" id="default-duration" class="setting-input" min="1" max="3600" value="60">
-                                </label>
-                            </div>
-
-                            <div class="setting-item">
-                                <label class="setting-label">
-                                    <span>Звуковой сигнал</span>
-                                    <input type="checkbox" id="sound-enabled" checked class="setting-checkbox">
-                                </label>
-                            </div>
-
-                            <div class="setting-item">
-                                <label class="setting-label">
-                                    <span>Вибрация</span>
-                                    <input type="checkbox" id="vibration-enabled" checked class="setting-checkbox">
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <div class="section-title">💾 Данные</div>
-                            
-                            <div class="data-actions">
-                                <button id="export-btn" class="btn-export">Экспорт данных</button>
-                                <label class="btn-import">
-                                    Импорт данных
-                                    <input type="file" id="import-input" accept=".json" style="display: none;">
-                                </label>
-                            </div>
-
-                            <div class="data-info">
-                                <p>Экспорт сохранит все ваши тренировки и настройки в файл JSON.</p>
-                                <p>Импорт заменит все текущие данные на данные из файла.</p>
-                            </div>
-                        </div>
-
-                        <div class="settings-section">
-                            <div class="section-title">🔧 Сброс</div>
-                            
-                            <div class="reset-actions">
-                                <button id="clear-all-btn" class="btn-danger">Очистить все данные</button>
-                                <button id="reset-settings-btn" class="btn-warning">Сбросить настройки</button>
-                            </div>
-
-                            <div class="reset-info">
-                                <p><strong>Внимание:</strong> Очистка данных удалит всю историю тренировок и сбросит настройки.</p>
-                                <p>Это действие нельзя отменить.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <!-- Подключение стилей -->
-    <link rel="stylesheet" href="style.css?v=1.0.3">
-
-    <!-- Основной JavaScript -->
-    <script>
-        // LitePlank - Чистый JavaScript PWA приложение
-        class LitePlank {
-            constructor() {
-                this.history = [];
-                this.settings = {
-                    defaultDuration: 60,
-                    soundEnabled: true,
-                    vibrationEnabled: true,
-                    darkMode: false
-                };
-                this.currentSession = {
-                    isRunning: false,
-                    timeLeft: 0,
-                    duration: 60,
-                    timer: null
-                };
-                this.audioContext = null;
-                
-                this.init();
-            }
-
-            showNotification(message, type = 'info') {
-                const container = document.getElementById('notification-container');
-                if (!container) return;
-
-                const notification = document.createElement('div');
-                notification.className = `notification notification-${type}`;
-                notification.innerHTML = `
-                    <div class="notification-content">${message}</div>
-                    <button class="notification-close" onclick="this.parentElement.remove()">&times;</button>
-                `;
-
-                container.appendChild(notification);
-
-                // Автоматическое удаление через 3 секунды
-                setTimeout(() => {
-                    if (notification.parentElement) {
-                        notification.remove();
-                    }
-                }, 3000);
-            }
-
-            init() {
-                this.loadSettings();
-                this.loadHistory();
-                this.setupEventListeners();
-                this.render();
-                this.setupServiceWorker();
-                
-                // Скрыть загрузку и показать приложение
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('app').style.display = 'block';
-            }
-
-            setupEventListeners() {
-                // Навигация
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        this.switchTab(e.target.closest('.tab-btn').dataset.tab);
-                    });
-                });
-
-                // Тема
-                const themeToggle = document.getElementById('theme-toggle');
-                if (themeToggle) {
-                    themeToggle.addEventListener('click', () => {
-                        this.toggleTheme();
-                    });
-                }
-
-                // Таймер
-                const startBtn = document.getElementById('start-btn');
-                const pauseBtn = document.getElementById('pause-btn');
-                const finishBtn = document.getElementById('finish-btn');
-                const resetBtn = document.getElementById('reset-btn');
-                const durationInput = document.getElementById('duration-input');
-
-                if (startBtn) startBtn.addEventListener('click', () => this.startTimer());
-                if (pauseBtn) pauseBtn.addEventListener('click', () => this.pauseTimer());
-                if (finishBtn) finishBtn.addEventListener('click', () => this.finishEarly());
-                if (resetBtn) resetBtn.addEventListener('click', () => this.resetTimer());
-                if (durationInput) durationInput.addEventListener('change', (e) => {
-                    this.currentSession.duration = Math.max(0, parseInt(e.target.value) || 0);
-                    this.currentSession.timeLeft = this.currentSession.duration;
-                    this.updateTimerDisplay();
-                });
-
-                // История
-                const clearHistoryBtn = document.getElementById('clear-history-btn');
-                if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () => this.clearHistory());
-
-                // Делегирование событий для истории тренировок
-                const historyList = document.getElementById('history-list');
-                if (historyList) {
-                    historyList.addEventListener('click', (e) => {
-                        const deleteBtn = e.target.closest('[data-action="delete-session"]');
-                        if (deleteBtn) {
-                            const historyItem = deleteBtn.closest('.history-item');
-                            if (historyItem) {
-                                const index = parseInt(historyItem.dataset.sessionIndex);
-                                this.deleteSession(index);
-                            }
-                        }
-                    });
-                }
-
-                // Настройки пользовательских параметров
-                const saveUserSettingsBtn = document.getElementById('save-user-settings-btn');
-                if (saveUserSettingsBtn) saveUserSettingsBtn.addEventListener('click', () => this.saveUserSettings());
-                
-                // Удаляем все обработчики change для параметров
-                // Пересчет истории выполняется только при сохранении настроек
-
-                // Настройки
-                const defaultDuration = document.getElementById('default-duration');
-                const soundEnabled = document.getElementById('sound-enabled');
-                const vibrationEnabled = document.getElementById('vibration-enabled');
-                const exportBtn = document.getElementById('export-btn');
-                const importInput = document.getElementById('import-input');
-                const clearAllBtn = document.getElementById('clear-all-btn');
-                const resetSettingsBtn = document.getElementById('reset-settings-btn');
-
-                if (defaultDuration) defaultDuration.addEventListener('change', (e) => {
-                    this.settings.defaultDuration = parseInt(e.target.value);
-                    this.saveSettings();
-                });
-
-                if (soundEnabled) soundEnabled.addEventListener('change', (e) => {
-                    this.settings.soundEnabled = e.target.checked;
-                    this.saveSettings();
-                });
-
-                if (vibrationEnabled) vibrationEnabled.addEventListener('change', (e) => {
-                    this.settings.vibrationEnabled = e.target.checked;
-                    this.saveSettings();
-                });
-
-                if (exportBtn) exportBtn.addEventListener('click', () => this.exportData());
-                if (importInput) importInput.addEventListener('change', (e) => this.importData(e));
-                if (clearAllBtn) clearAllBtn.addEventListener('click', () => this.clearAllData());
-                if (resetSettingsBtn) resetSettingsBtn.addEventListener('click', () => this.resetSettings());
-            }
-
-            switchTab(tabName) {
-                // Обновляем активные табы
-                document.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.tab === tabName);
-                });
-
-                // Показываем нужную секцию
-                document.querySelectorAll('.section').forEach(section => {
-                    section.classList.toggle('active', section.id === `${tabName}-section`);
-                });
-            }
-
-            startTimer() {
-                if (this.currentSession.timeLeft <= 0) {
-                    this.currentSession.timeLeft = this.currentSession.duration;
-                }
-                
-                this.currentSession.isRunning = true;
-                this.updateTimerControls();
-                
-                // Инициализируем AudioContext при первом взаимодействии пользователя
-                this.initializeAudioContext();
-                
-                this.currentSession.timer = setInterval(() => {
-                    if (this.currentSession.timeLeft > 0) {
-                        this.currentSession.timeLeft--;
-                        this.updateTimerDisplay();
-                    } else {
-                        this.completeTimer();
-                    }
-                }, 1000);
-            }
-
-            initializeAudioContext() {
-    if (!this.audioContext) {
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            console.log('[Audio] AudioContext успешно инициализирован');
-        } catch (e) {
-            console.error('[Audio] Ошибка инициализации AudioContext:', e);
-            // Опционально: отключаем звук в настройках при ошибке
-            this.settings.soundEnabled = false;
-            this.saveSettings();
-            this.showNotification('Аудио недоступно. Звук отключен.', 'warning');
-        }
-    }
-}
-
-            pauseTimer() {
-                this.currentSession.isRunning = false;
-                if (this.currentSession.timer) {
-                    clearInterval(this.currentSession.timer);
-                    this.currentSession.timer = null;
-                }
-                this.updateTimerControls();
-            }
-
-            resetTimer() {
-                this.pauseTimer();
-                this.currentSession.timeLeft = this.currentSession.duration;
-                this.updateTimerDisplay();
-            }
-
-            finishEarly() {
-                this.pauseTimer();
-                const actualDuration = this.currentSession.duration - this.currentSession.timeLeft;
-                this.addSession(actualDuration);
-                this.playSound();
-                this.vibrate();
-            }
-
-            completeTimer() {
-                this.pauseTimer();
-                this.addSession(this.currentSession.duration);
-                this.playSound();
-                this.vibrate();
-            }
-
-            addSession(duration) {
-                const session = {
-                    date: new Date().toISOString(),
-                    duration: duration,
-                    calories: this.calculateCalories(duration)
-                };
-                this.history.unshift(session);
-                this.saveHistory();
-                this.updateHistory();
-            }
-
-            calculateCalories(seconds) {
-    const weight = parseFloat(document.getElementById('userWeight')?.value || 70);
-    
-    // Проверка на валидные числовые значения
-    if (isNaN(weight) || weight <= 0) {
-        return 0;
-    }
-    
-    // MET для стандартной планки (можно сделать настраиваемым)
-    const met = 3.5; 
-    const minutes = seconds / 60;
-    // Стандартная формула: (MET * 3.5 * вес в кг) / 200 * минуты
-    const caloriesPerMinute = (met * 3.5 * weight) / 200;
-    return caloriesPerMinute * minutes;
-}
-
-            playSound() {
-                if (!this.settings.soundEnabled) return;
-                
-                try {
-                    // Проверяем наличие AudioContext
-                    if (!this.audioContext) return;
-                    
-                    // Проверяем, нужно ли разрешение на воспроизведение звука
-                    if (this.audioContext.state === 'suspended') {
-                        this.audioContext.resume();
-                    }
-                    
-                    const oscillator = this.audioContext.createOscillator();
-                    const gainNode = this.audioContext.createGain();
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(this.audioContext.destination);
-                    
-                    oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
-                    
-                    oscillator.start(this.audioContext.currentTime);
-                    oscillator.stop(this.audioContext.currentTime + 0.5);
-                } catch (e) {
-                    // Игнорируем ошибки аудио
-                }
-            }
-
-            vibrate() {
-                if (!this.settings.vibrationEnabled || !navigator.vibrate) return;
-                navigator.vibrate([100, 50, 100]);
-            }
-
-            updateTimerDisplay() {
-                const minutes = Math.floor(this.currentSession.timeLeft / 60);
-                const seconds = this.currentSession.timeLeft % 60;
-                const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                document.getElementById('timer-display').textContent = timeStr;
-            }
-
-
-            updateTimerControls() {
-                const startBtn = document.getElementById('start-btn');
-                const pauseBtn = document.getElementById('pause-btn');
-                const finishBtn = document.getElementById('finish-btn');
-                
-                if (this.currentSession.isRunning) {
-                    startBtn.style.display = 'none';
-                    pauseBtn.style.display = 'inline-block';
-                    finishBtn.style.display = 'inline-block';
-                } else {
-                    startBtn.style.display = 'inline-block';
-                    pauseBtn.style.display = 'none';
-                    finishBtn.style.display = 'none';
-                }
-            }
-
-            updateHistory() {
-                const historyList = document.getElementById('history-list');
-                const emptyState = document.getElementById('empty-state');
-                
-                if (this.history.length === 0) {
-                    historyList.innerHTML = '';
-                    emptyState.style.display = 'block';
-                    return;
-                }
-                
-                emptyState.style.display = 'none';
-                // Показываем последние 10 тренировок
-                const recentHistory = this.history.slice(0, 10);
-                historyList.innerHTML = recentHistory.map((session, index) => `
-                    <div class="history-item" data-session-index="${index}">
-                        <div class="session-info">
-                            <div class="session-date">${this.formatDate(session.date)}</div>
-                            <div class="session-duration">${this.formatTime(session.duration)}</div>
-                            <div class="session-calories">${session.calories.toFixed(1)} ккал</div>
-                        </div>
-                        <div class="session-actions">
-                            <button class="btn-delete" data-action="delete-session" title="Удалить тренировку">🗑️</button>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Обновляем статистику
-                this.updateHistoryStats();
-            }
-
-            updateHistoryStats() {
-                const totalSessions = this.history.length;
-                const totalTime = this.history.reduce((sum, session) => sum + session.duration, 0);
-                const totalCalories = this.history.reduce((sum, session) => sum + session.calories, 0);
-                const avgTime = totalSessions > 0 ? Math.round(totalTime / totalSessions) : 0;
-                
-                // Получаем вес пользователя
-                const userWeight = parseFloat(document.getElementById('userWeight')?.value || 70);
-                
-                // Проверка на валидные числовые значения
-                if (isNaN(userWeight) || userWeight <= 0) {
-                    document.getElementById('total-weight').textContent = '0 кг';
-                } else {
-                    // Удержано кг = Вес × Количество тренировок
-                    const totalWeight = userWeight * totalSessions;
-                    document.getElementById('total-weight').textContent = `${totalWeight.toFixed(1)} кг`;
-                }
-
-                document.getElementById('total-sessions').textContent = totalSessions;
-                document.getElementById('total-time').textContent = this.formatTotalTime(totalTime);
-                document.getElementById('total-calories').textContent = `${totalCalories.toFixed(1)} ккал`;
-                document.getElementById('avg-time').textContent = this.formatAverageTime(avgTime);
-            }
-
-            deleteSession(index) {
-                if (confirm('Удалить эту тренировку?')) {
-                    this.history.splice(index, 1);
-                    this.saveHistory();
-                    this.updateHistory();
-                    this.showNotification('Тренировка удалена', 'success');
-                }
-            }
-
-            clearHistory() {
-                if (confirm('Очистить всю историю тренировок?')) {
-                    this.history = [];
-                    this.saveHistory();
-                    this.updateHistory();
-                    this.showNotification('История тренировок очищена', 'success');
-                }
-            }
-
-
-            toggleTheme() {
-                this.settings.darkMode = !this.settings.darkMode;
-                document.documentElement.setAttribute('data-theme', this.settings.darkMode ? 'dark' : 'light');
-                document.getElementById('theme-toggle').innerHTML = `<span>${this.settings.darkMode ? '☀️' : '🌙'}</span>`;
-                this.saveSettings();
-            }
-
-            exportData() {
-                const data = {
-                    history: this.history,
-                    settings: this.settings,
-                    exportDate: new Date().toISOString()
-                };
-                
-                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `liteplank-backup-${new Date().toISOString().slice(0, 10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            importData(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        if (data.history && Array.isArray(data.history)) {
-                            if (confirm('Это заменит все текущие данные. Продолжить?')) {
-                                this.history = data.history;
-                                if (data.settings) {
-                                    this.settings = data.settings;
-                                    this.applySettings();
-                                }
-                                this.saveHistory();
-                                this.saveSettings();
-                                this.render();
-                                this.showNotification('Данные успешно импортированы!', 'success');
-                            }
-                        } else {
-                            this.showNotification('Некорректный формат файла', 'error');
-                        }
-                    } catch (error) {
-                        this.showNotification('Ошибка при чтении файла', 'error');
-                    }
-                };
-                reader.readAsText(file);
-                event.target.value = '';
-            }
-
-            clearAllData() {
-                if (confirm('Вы уверены, что хотите удалить все данные? Это действие нельзя отменить.')) {
-                    this.history = [];
-                    this.resetSettings();
-                    this.saveHistory();
-                    this.render();
-                    this.showNotification('Все данные удалены', 'success');
-                }
-            }
-
-            resetSettings() {
-                this.settings = {
-                    defaultDuration: 60,
-                    soundEnabled: true,
-                    vibrationEnabled: true,
-                    darkMode: false
-                };
-                this.applySettings();
-                this.saveSettings();
-                this.showNotification('Настройки сброшены', 'success');
-            }
-
-            applySettings() {
-                const defaultDurationEl = document.getElementById('default-duration');
-                const soundEnabledEl = document.getElementById('sound-enabled');
-                const vibrationEnabledEl = document.getElementById('vibration-enabled');
-                const themeToggleEl = document.getElementById('theme-toggle');
-                
-                if (defaultDurationEl) defaultDurationEl.value = this.settings.defaultDuration;
-                if (soundEnabledEl) soundEnabledEl.checked = this.settings.soundEnabled;
-                if (vibrationEnabledEl) vibrationEnabledEl.checked = this.settings.vibrationEnabled;
-                document.documentElement.setAttribute('data-theme', this.settings.darkMode ? 'dark' : 'light');
-                if (themeToggleEl) themeToggleEl.innerHTML = `<span>${this.settings.darkMode ? '☀️' : '🌙'}</span>`;
-            }
-
-            saveSettings() {
-                localStorage.setItem('liteplank-settings', JSON.stringify(this.settings));
-            }
-
-            loadSettings() {
-                const saved = localStorage.getItem('liteplank-settings');
-                if (saved) {
-                    this.settings = JSON.parse(saved);
-                    this.applySettings();
-                }
-                
-                // Загружаем пользовательские параметры
-                this.loadUserSettings();
-            }
-
-            saveUserSettings() {
-                const userSettings = {
-                    gender: document.getElementById('userGender')?.value || 'male',
-                    weight: parseFloat(document.getElementById('userWeight')?.value || 70),
-                    height: parseFloat(document.getElementById('userHeight')?.value || 175),
-                    age: parseInt(document.getElementById('userAge')?.value || 30)
-                };
-                
-                // Проверка на валидные числовые значения
-                if (isNaN(userSettings.weight) || isNaN(userSettings.height) || isNaN(userSettings.age) || 
-                    userSettings.weight <= 0 || userSettings.height <= 0 || userSettings.age <= 0) {
-                    this.showNotification('Пожалуйста, введите корректные значения веса, роста и возраста', 'error');
-                    return;
-                }
-                
-                // Загружаем предыдущие настройки для сравнения
-                const previousSettings = JSON.parse(localStorage.getItem('liteplank-user-settings') || '{}');
-                
-                // Проверяем, изменился ли вес (только вес влияет на расчет калорий)
-                const weightChanged = previousSettings.weight !== userSettings.weight;
-                
-                localStorage.setItem('liteplank-user-settings', JSON.stringify(userSettings));
-                this.showNotification('Параметры пользователя сохранены', 'success');
-                
-                // Пересчитываем историю только если изменился вес
-                if (weightChanged) {
-                    this.recalculateHistory();
-                }
-            }
-
-            loadUserSettings() {
-                const saved = localStorage.getItem('liteplank-user-settings');
-                if (saved) {
-                    const userSettings = JSON.parse(saved);
-                    
-                    const genderEl = document.getElementById('userGender');
-                    const weightEl = document.getElementById('userWeight');
-                    const heightEl = document.getElementById('userHeight');
-                    const ageEl = document.getElementById('userAge');
-                    
-                    if (genderEl) genderEl.value = userSettings.gender || 'male';
-                    if (weightEl) weightEl.value = userSettings.weight || 70;
-                    if (heightEl) heightEl.value = userSettings.height || 175;
-                    if (ageEl) ageEl.value = userSettings.age || 30;
-                }
-            }
-
-            saveHistory() {
-                localStorage.setItem('liteplank-history', JSON.stringify(this.history));
-            }
-
-            loadHistory() {
-                const saved = localStorage.getItem('liteplank-history');
-                if (saved) {
-                    this.history = JSON.parse(saved);
-                }
-            }
-
-            recalculateHistory() {
-                // Проверяем корректность веса перед пересчетом
-                const weight = parseFloat(document.getElementById('userWeight')?.value || 70);
-                if (isNaN(weight) || weight <= 0) {
-                    return;
-                }
-                
-                // Пересчитываем калории для всех тренировок с новыми параметрами
-                this.history.forEach(session => {
-                    session.calories = this.calculateCalories(session.duration);
-                });
-                
-                // Сохраняем обновленную историю
-                this.saveHistory();
-                
-                // Обновляем отображение
-                this.updateHistory();
-            }
-
-            render() {
-                this.currentSession.duration = this.settings.defaultDuration;
-                this.currentSession.timeLeft = this.currentSession.duration;
-                this.updateTimerDisplay();
-                this.updateTimerControls();
-                this.updateHistory();
-            }
-
-            formatTime(seconds) {
-                if (seconds < 60) return `${seconds} сек`;
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${mins} мин ${secs} сек`;
-            }
-
-            formatTotalTime(seconds) {
-                if (seconds < 60) return `${seconds} сек`;
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                return `${mins} мин ${secs} сек`;
-            }
-
-            formatAverageTime(seconds) {
-                if (seconds < 60) return `${Math.round(seconds)} сек`;
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.round(seconds % 60);
-                return `${mins} мин ${secs} сек`;
-            }
-
-            formatDate(dateString) {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('ru-RU', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-
-            async setupServiceWorker() {
-                if ('serviceWorker' in navigator) {
-                    try {
-                        const registration = await navigator.serviceWorker.register('service-worker.js');
-                        console.log('SW registered');
-                        
-                        // Сохраняем ссылку на нового воркера
-                        let newWorker = null;
-                        
-                        // Стандартный механизм обнаружения обновлений
-                        registration.addEventListener('updatefound', () => {
-                            newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // Доступно обновление
-                                    this.handleUpdateAvailable(newWorker);
-                                }
-                            });
-                        });
-                        
-                        // Проверка активного сервис-воркера на наличие обновлений
-                        if (registration.waiting) {
-                            this.handleUpdateAvailable(registration.waiting);
-                        }
-                        
-                        // Автоматическая перезагрузка после активации нового воркера
-                        const reloadHandler = () => {
-                            navigator.serviceWorker.removeEventListener('controllerchange', reloadHandler);
-                            window.location.reload();
-                        };
-                        navigator.serviceWorker.addEventListener('controllerchange', reloadHandler);
-                        
-                    } catch (error) {
-                        console.log('SW registration failed:', error);
-                    }
-                }
-            }
-
-            handleUpdateAvailable(worker) {
-                // Защита от вызова без параметра
-                if (!worker) {
-                    console.warn('handleUpdateAvailable вызван без параметра worker');
-                    return;
-                }
-                
-                console.log('Service Worker сообщает об обновлении');
-                this.showNotification('Доступно обновление приложения', 'info');
-                
-                // Запрашиваем подтверждение пользователя перед перезагрузкой
-                if (confirm('Доступно обновление приложения. Применить обновление?')) {
-                    // Активируем нового сервис-воркера
-                    worker.postMessage({ type: 'SKIP_WAITING' });
-                    // Перезагрузка произойдёт автоматически через controllerchange
-                }
-            }
-        }
-
-        // Инициализация приложения
-        const litePlank = new LitePlank();
-    </script>
+<!-- Элемент загрузки -->
+<div id="loading" class="loading" style="display: none; align-items: center; justify-content: center; height: 100vh; width: 100%;">
+<div style="text-align: center;">
+<div style="font-size: 3rem; margin-bottom: 1rem;">🫁</div>
+<div style="font-size: 1.5rem; font-weight: bold; color: var(--accent);">LitePlank</div>
+<div style="color: var(--text-secondary); margin-top: 0.5rem;" data-i18n="app.loading">Загрузка...</div>
+</div>
+</div>
+<!-- Основное приложение -->
+<div id="app">
+<!-- Навигация -->
+<nav id="navbar" class="navbar">
+<div class="brand">
+<div class="brand-logo">🫁</div>
+<div class="brand-text">
+<div class="brand-title" data-i18n="app.brand.title">LitePlank</div>
+<div class="brand-subtitle" data-i18n="app.brand.subtitle">Планка трекер</div>
+</div>
+</div>
+<div class="tabs" id="desktop-tabs">
+<button class="tab-btn active" data-tab="timer">
+<span class="tab-icon">⏱️</span>
+<span class="tab-text" data-i18n="tabs.timer">Таймер</span>
+</button>
+<button class="tab-btn" data-tab="history">
+<span class="tab-icon">📊</span>
+<span class="tab-text" data-i18n="tabs.history">История</span>
+</button>
+<button class="tab-btn" data-tab="settings">
+<span class="tab-icon">⚙️</span>
+<span class="tab-text" data-i18n="tabs.settings">Настройки</span>
+</button>
+</div>
+<div class="actions">
+<button class="theme-btn" id="theme-toggle" data-i18n-title="theme.dark" title="Темная тема">
+<span>🌙</span>
+</button>
+</div>
+</nav>
+<!-- Мобильное меню внизу -->
+<nav id="mobile-nav" class="mobile-nav">
+<div class="tabs" id="tabs">
+<button class="tab-btn active" data-tab="timer">
+<span class="tab-icon">⏱️</span>
+<span class="tab-text" data-i18n="tabs.timer">Таймер</span>
+</button>
+<button class="tab-btn" data-tab="history">
+<span class="tab-icon">📊</span>
+<span class="tab-text" data-i18n="tabs.history">История</span>
+</button>
+<button class="tab-btn" data-tab="settings">
+<span class="tab-icon">⚙️</span>
+<span class="tab-text" data-i18n="tabs.settings">Настройки</span>
+</button>
+</div>
+</nav>
+<!-- Основное содержимое -->
+<main class="main-content">
+<!-- Таймер -->
+<section id="timer-section" class="section active">
+<div class="timer-container">
+<div class="timer-display">
+<div class="time" id="timer-display">01:00</div>
+</div>
+<div class="controls">
+<button id="start-btn" class="btn btn-start" data-i18n="timer.start">Старт</button>
+<button id="pause-btn" class="btn btn-pause" style="display: none;" data-i18n="timer.pause">Пауза</button>
+<button id="finish-btn" class="btn btn-finish" style="display: none;" data-i18n="timer.finish">Завершить</button>
+<button id="reset-btn" class="btn btn-reset" data-i18n="timer.reset">Сброс</button>
+</div>
+<div class="settings">
+<label>
+<span data-i18n="timer.duration">Время (сек):</span>
+<input type="number" id="duration-input" value="60" min="1" max="3600">
+</label>
+</div>
+</div>
+</section>
+<!-- История -->
+<section id="history-section" class="section">
+<div class="history-container">
+<div class="history-header">
+<h2 data-i18n="history.title">История тренировок</h2>
+<div class="stats">
+<div class="stat-item">
+<span class="stat-label" data-i18n="history.totalSessions">Всего тренировок:</span>
+<span class="stat-value" id="total-sessions">0</span>
+</div>
+<div class="stat-item">
+<span class="stat-label" data-i18n="history.totalTime">Общее время:</span>
+<span class="stat-value" id="total-time">0 сек</span>
+</div>
+<div class="stat-item">
+<span class="stat-label" data-i18n="history.totalCalories">Сожжено калорий:</span>
+<span class="stat-value" id="total-calories">0 ккал</span>
+</div>
+<div class="stat-item">
+<span class="stat-label" data-i18n="history.totalWeight">Удержано кг:</span>
+<span class="stat-value" id="total-weight">0 кг</span>
+<span class="stat-hint" data-i18n-title="history.hint" title="Расчет: Вес × Количество тренировок">ℹ️</span>
+</div>
+<div class="stat-item">
+<span class="stat-label" data-i18n="history.avgTime">Среднее время:</span>
+<span class="stat-value" id="avg-time">0 сек</span>
+</div>
+</div>
+</div>
+<div class="history-list" id="history-list">
+<!-- История будет добавляться здесь -->
+</div>
+<div class="empty-state" id="empty-state">
+<p data-i18n="history.emptyState">История тренировок пуста</p>
+<p class="hint" data-i18n="history.emptyHint">Начните первую тренировку, чтобы увидеть здесь результаты</p>
+</div>
+<div class="history-actions">
+<button id="clear-history-btn" class="btn-clear" data-i18n="history.clearHistory">Очистить историю</button>
+</div>
+</div>
+</section>
+<!-- Настройки -->
+<section id="settings-section" class="section">
+<div class="settings-container">
+<div class="settings-header">
+<h2 data-i18n="settings.title">Настройки</h2>
+<p class="subtitle" data-i18n="settings.subtitle">Персонализируйте свое приложение</p>
+</div>
+<div class="settings-content">
+<div class="settings-section">
+<div class="section-title" data-i18n="settings.basicSettings">⚙️ Основные настройки</div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="language.title">Язык</span>
+<select id="language-select" class="setting-input" style="width: 150px;">
+<option value="ru" data-i18n="language.ru">Русский</option>
+<option value="en" data-i18n="language.en">English</option>
+</select>
+</label>
+</div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="settings.gender">Пол</span>
+<select id="userGender" class="setting-input" style="width: 120px;">
+<option value="male" data-i18n="settings.genderMale">Мужской</option>
+<option value="female" data-i18n="settings.genderFemale">Женский</option>
+</select>
+</label>
+</div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="settings.weight">Вес (кг)</span>
+<input type="number" id="userWeight" class="setting-input" min="30" max="200" step="0.1" value="70">
+</label>
+</div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="settings.height">Рост (см)</span>
+<input type="number" id="userHeight" class="setting-input" min="140" max="220" step="1" value="175">
+</label>
+</div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="settings.age">Возраст</span>
+<input type="number" id="userAge" class="setting-input" min="14" max="80" step="1" value="30">
+</label>
+</div>
+<div class="setting-item">
+<button id="save-user-settings-btn" class="btn btn-primary" data-i18n="settings.saveSettings">💾 Сохранить параметры</button>
+</div>
+<!-- Всплывающие виджеты -->
+<div id="notification-container" class="notification-container"></div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="settings.defaultDuration">Время по умолчанию (сек)</span>
+<input type="number" id="default-duration" class="setting-input" min="1" max="3600" value="60">
+</label>
+</div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="settings.soundEnabled">Звуковой сигнал</span>
+<input type="checkbox" id="sound-enabled" checked class="setting-checkbox">
+</label>
+</div>
+<div class="setting-item">
+<label class="setting-label">
+<span data-i18n="settings.vibrationEnabled">Вибрация</span>
+<input type="checkbox" id="vibration-enabled" checked class="setting-checkbox">
+</label>
+</div>
+</div>
+<div class="settings-section">
+<div class="section-title" data-i18n="settings.data">💾 Данные</div>
+<div class="data-actions">
+<button id="export-btn" class="btn-export" data-i18n="settings.exportData">Экспорт данных</button>
+<label class="btn-import">
+<span data-i18n="settings.importData">Импорт данных</span>
+<input type="file" id="import-input" accept=".json" style="display: none;">
+</label>
+</div>
+<div class="data-info">
+<p data-i18n="settings.exportInfo">Экспорт сохранит все ваши тренировки и настройки в файл JSON.</p>
+<p data-i18n="settings.importInfo">Импорт заменит все текущие данные на данные из файла.</p>
+</div>
+</div>
+<div class="settings-section">
+<div class="section-title" data-i18n="settings.reset">🔧 Сброс</div>
+<div class="reset-actions">
+<button id="clear-all-btn" class="btn-danger" data-i18n="settings.clearAll">Очистить все данные</button>
+<button id="reset-settings-btn" class="btn-warning" data-i18n="settings.resetSettings">Сбросить настройки</button>
+</div>
+<div class="reset-info">
+<p><strong data-i18n="settings.warning">Внимание:</strong> <span data-i18n="settings.clearWarning">Очистка данных удалит всю историю тренировок и сбросит настройки.</span></p>
+<p data-i18n="settings.cannotUndo">Это действие нельзя отменить.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Подключение стилей -->
+<link rel="stylesheet" href="style.css?v=1.0.3">
+<!-- Подключение JavaScript -->
+<script src="js/i18n.js"></script>
+<script src="js/app.js"></script>
 </body>
-
 </html>
-
-

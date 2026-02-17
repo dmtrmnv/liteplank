@@ -1,6 +1,6 @@
 // LitePlank Service Worker - Версионированная система кэширования
 // Версия: liteplank-v2.1.2
-const CACHE_NAME = 'liteplank-v2.1.3';
+const CACHE_NAME = 'liteplank-v2.1.15';
 const baseUrl = self.location.origin + '/liteplank';
 const urlsToCache = [
     baseUrl + '/',
@@ -8,7 +8,8 @@ const urlsToCache = [
     baseUrl + '/style.css', 
     baseUrl + '/manifest.json',
     baseUrl + '/icon-192.png',
-    baseUrl + '/icon-512.png'
+    baseUrl + '/icon-512.png',
+    baseUrl + '/js/app.js'
 ];
 
 
