@@ -3,6 +3,7 @@
 Простое и удобное приложение для тренировок планки. Следите за своими результатами, считайте калории и отслеживайте прогресс.
 
 ![LitePlank Logo](icon-192.png)
+[![LitePlank: Планка трекер](https://pwastat.ru/badgen/generate.php?label=LitePlank&message=%D0%9F%D0%BB%D0%B0%D0%BD%D0%BA%D0%B0+%D1%82%D1%80%D0%B5%D0%BA%D0%B5%D1%80&labelcolor=grey&color=green&format=png&scale=2)](https://dmtrmnv.github.io/liteplank/)
 
 ## 🚀 Быстрый старт
 
