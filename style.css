@@ -648,6 +648,17 @@ body {
     font-weight: 500;
 }
 
+.session-plank {
+    font-size: 0.875rem;
+    color: var(--accent);
+    font-weight: 600;
+    background: var(--accent-soft);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    margin: 0.125rem 0;
+}
+
 .session-duration {
     font-size: 1.125rem;
     font-weight: bold;
