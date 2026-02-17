@@ -321,6 +321,112 @@ body {
     transition: var(--transition);
 }
 
+/* Селектор планки */
+.plank-selector-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.plank-selector-container {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+}
+
+.plank-selector-header {
+    margin-bottom: 0.75rem;
+}
+
+.plank-selector-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.plank-selector {
+    margin-bottom: 1rem;
+}
+
+.plank-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+.plank-select:hover {
+    border-color: var(--accent);
+}
+
+.plank-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.plank-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+}
+
+.plank-image-container {
+    width: 80px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.plank-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.plank-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: left;
+}
+
+.plank-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.plank-met {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.plank-met-value {
+    color: var(--accent);
+    font-weight: 700;
+}
+
 .timer-display {
     margin-bottom: 2rem;
 }
@@ -1118,6 +1224,14 @@ body {
         height: 150px;
     }
     
+    .plank-preview {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .plank-info {
+        text-align: center;
+    }
     
     .setting-item {
         padding: 0.75rem;

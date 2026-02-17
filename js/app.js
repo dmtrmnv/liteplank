@@ -47,6 +47,9 @@ window.i18n.applyTranslations();
 // Устанавливаем значение селектора языка
 this.setupLanguageSelector(savedLang);
 
+// Загружаем планки
+await this.initPlanks();
+
 this.loadSettings();
 this.loadHistory();
 this.setupEventListeners();
@@ -56,6 +59,13 @@ this.setupServiceWorker();
 // Скрыть загрузку и показать приложение
 document.getElementById('loading').style.display = 'none';
 document.getElementById('app').style.display = 'block';
+}
+
+async initPlanks() {
+if (window.planksManager) {
+await window.planksManager.loadPlanks();
+window.planksManager.renderPlankSelector('plank-selector-wrapper');
+}
 }
 
 setupLanguageSelector(currentLang) {
@@ -75,6 +85,10 @@ if (success) {
 const languageSelect = document.getElementById('language-select');
 if (languageSelect) {
 languageSelect.value = lang;
+}
+// Обновляем язык в planksManager
+if (window.planksManager) {
+window.planksManager.updateLanguage();
 }
 // Показываем уведомление
 const langNames = {
@@ -240,6 +254,10 @@ const actualDuration = this.currentSession.duration - this.currentSession.timeLe
 this.addSession(actualDuration);
 this.playSound();
 this.vibrate();
+// Полностью сбрасываем таймер
+this.currentSession.timeLeft = this.currentSession.duration;
+this.updateTimerDisplay();
+this.updateTimerControls();
 }
 
 completeTimer() {
@@ -247,6 +265,10 @@ this.pauseTimer();
 this.addSession(this.currentSession.duration);
 this.playSound();
 this.vibrate();
+// Полностью сбрасываем таймер
+this.currentSession.timeLeft = this.currentSession.duration;
+this.updateTimerDisplay();
+this.updateTimerControls();
 }
 
 addSession(duration) {
@@ -266,8 +288,8 @@ const weight = parseFloat(document.getElementById('userWeight')?.value || 70);
 if (isNaN(weight) || weight <= 0) {
 return 0;
 }
-// MET для стандартной планки (можно сделать настраиваемым)
-const met = 3.5;
+// Получаем MET из выбранной планки
+const met = window.planksManager ? window.planksManager.getCurrentMet() : 3.5;
 const minutes = seconds / 60;
 // Стандартная формула: (MET * 3.5 * вес в кг) / 200 * минуты
 const caloriesPerMinute = (met * 3.5 * weight) / 200;

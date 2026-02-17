@@ -103,5 +103,13 @@
 "units": {
 "kg": "kg",
 "kcal": "kcal"
+},
+"plank": {
+"selectPlank": "Select plank:",
+"elbow_plank": "Elbow Plank",
+"high_plank": "High Plank",
+"knee_plank": "Knee Plank",
+"raised_leg_plank": "Raised Leg Plank",
+"side_plank": "Side Plank"
 }
 }
