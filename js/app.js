@@ -272,10 +272,12 @@ this.updateTimerControls();
 }
 
 addSession(duration) {
+const currentPlank = window.planksManager ? window.planksManager.getCurrentPlank() : null;
 const session = {
 date: new Date().toISOString(),
 duration: duration,
-calories: this.calculateCalories(duration)
+calories: this.calculateCalories(duration),
+plankId: currentPlank ? currentPlank.id : null
 };
 this.history.unshift(session);
 this.saveHistory();
@@ -361,10 +363,13 @@ emptyState.style.display = 'none';
 
 // Показываем последние 10 тренировок
 const recentHistory = this.history.slice(0, 10);
-historyList.innerHTML = recentHistory.map((session, index) => `
+historyList.innerHTML = recentHistory.map((session, index) => {
+const plankName = session.plankId ? window.i18n.translate(`plank.${session.plankId}`) : null;
+return `
 <div class="history-item" data-session-index="${index}">
 <div class="session-info">
 <div class="session-date">${this.formatDate(session.date)}</div>
+${plankName ? `<div class="session-plank">${plankName}</div>` : ''}
 <div class="session-duration">${this.formatTime(session.duration)}</div>
 <div class="session-calories">${session.calories.toFixed(1)} ${window.i18n.translate('units.kcal')}</div>
 </div>
@@ -372,7 +377,8 @@ historyList.innerHTML = recentHistory.map((session, index) => `
 <button class="btn-delete" data-action="delete-session" title="${window.i18n.translate('history.deleteSession')}">🗑️</button>
 </div>
 </div>
-`).join('');
+`;
+}).join('');
 
 // Обновляем статистику
 this.updateHistoryStats();
