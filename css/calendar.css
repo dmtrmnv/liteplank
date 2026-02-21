@@ -1,0 +1,402 @@
+/* LitePlank - Calendar Styles */
+
+/* Контейнер календаря */
+#calendar-section .calendar-container {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+/* Заголовок календаря */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.calendar-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.calendar-nav-btn {
+    background: var(--bg-primary);
+    border: 2px solid var(--border);
+    color: var(--text-primary);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1.25rem;
+}
+
+.calendar-nav-btn:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.05);
+}
+
+/* Сетка календаря */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 1.5rem;
+}
+
+/* Заголовки дней недели */
+.calendar-day-header {
+    text-align: center;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    padding: 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+
+/* Ячейки дней */
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    position: relative;
+    border: 2px solid transparent;
+    min-height: 40px;
+}
+
+.calendar-day:hover:not(.empty) {
+    background: var(--bg-tertiary);
+    transform: scale(1.05);
+}
+
+.calendar-day.empty {
+    background: transparent;
+    cursor: default;
+}
+
+.calendar-day .day-number {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+/* Сегодняшний день */
+.calendar-day.today {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+}
+
+.calendar-day.today .day-number {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* День с тренировками */
+.calendar-day.has-sessions {
+    background: linear-gradient(135deg, var(--accent-soft), transparent);
+}
+
+.calendar-day.has-sessions .day-number {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* Индикатор тренировки */
+.session-indicator {
+    position: absolute;
+    bottom: 4px;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: var(--radius-full);
+    animation: pulse 2s infinite;
+}
+
+/* Выбранный день */
+.calendar-day.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(66, 185, 131, 0.4);
+}
+
+.calendar-day.selected .day-number {
+    color: white;
+}
+
+.calendar-day.selected .session-indicator {
+    background: white;
+}
+
+/* Статистика месяца */
+.calendar-month-stats {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.stats-title {
+    text-align: center;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+
+.stats-grid .stat-card {
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+}
+
+.stats-grid .stat-value {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+}
+
+.stats-grid .stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Детали выбранного дня */
+.calendar-day-details {
+    background: var(--bg-primary);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border: 1px solid var(--border);
+    min-height: 100px;
+}
+
+.calendar-hint {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin: 1.5rem 0;
+}
+
+.no-sessions {
+    text-align: center;
+    color: var(--text-secondary);
+    margin: 1.5rem 0;
+}
+
+.day-details-title {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Список тренировок */
+.sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.session-item {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    transition: var(--transition-fast);
+}
+
+.session-item:hover {
+    border-color: var(--accent);
+    transform: translateX(4px);
+}
+
+.session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.session-plank-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.session-time {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.session-details {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+}
+
+.session-duration {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.session-calories {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* Итого за день */
+.day-total {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.day-total span:last-child {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    #calendar-section .calendar-container {
+        padding: 1rem;
+    }
+    
+    .calendar-title {
+        font-size: 1.25rem;
+    }
+    
+    .calendar-nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .calendar-day {
+        min-height: 36px;
+    }
+    
+    .calendar-day .day-number {
+        font-size: 0.8rem;
+    }
+    
+    .session-indicator {
+        width: 5px;
+        height: 5px;
+        bottom: 3px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .stats-grid .stat-value {
+        font-size: 1rem;
+    }
+    
+    .stats-grid .stat-label {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #calendar-section .calendar-container {
+        padding: 0.75rem;
+    }
+    
+    .calendar-header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+    }
+    
+    .calendar-title {
+        font-size: 1.1rem;
+    }
+    
+    .calendar-grid {
+        gap: 2px;
+    }
+    
+    .calendar-day {
+        min-height: 32px;
+    }
+    
+    .calendar-day .day-number {
+        font-size: 0.75rem;
+    }
+    
+    .calendar-day-header {
+        font-size: 0.75rem;
+        padding: 0.25rem;
+    }
+    
+    .session-indicator {
+        width: 4px;
+        height: 4px;
+        bottom: 2px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .stats-grid .stat-card {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .stats-grid .stat-value {
+        font-size: 0.9rem;
+    }
+    
+    .stats-grid .stat-label {
+        font-size: 0.65rem;
+    }
+    
+    .calendar-day-details {
+        padding: 0.75rem;
+    }
+    
+    .session-details {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+}

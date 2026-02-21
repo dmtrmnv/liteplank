@@ -11,6 +11,7 @@
 "tabs": {
 "timer": "Таймер",
 "history": "История",
+"calendar": "Календарь",
 "settings": "Настройки"
 },
 "theme": {
@@ -111,5 +112,19 @@
 "knee_plank": "Планка на коленях",
 "raised_leg_plank": "Планка с поднятой ногой",
 "side_plank": "Боковая планка"
+},
+"calendar": {
+"prevMonth": "Предыдущий месяц",
+"nextMonth": "Следующий месяц",
+"monthStats": "Статистика за месяц",
+"sessionsCount": "Тренировок",
+"totalTime": "Общее время",
+"caloriesBurned": "Сожжено калорий",
+"avgDuration": "Средняя длительность",
+"selectDayHint": "Выберите день для просмотра тренировок",
+"noSessionsOnDay": "В этот день не было тренировок",
+"unknownPlank": "Неизвестная планка",
+"dayTotal": "Итого за день",
+"trainings": "тренировок"
 }
 }

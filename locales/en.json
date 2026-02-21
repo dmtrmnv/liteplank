@@ -11,6 +11,7 @@
 "tabs": {
 "timer": "Timer",
 "history": "History",
+"calendar": "Calendar",
 "settings": "Settings"
 },
 "theme": {
@@ -111,5 +112,19 @@
 "knee_plank": "Knee Plank",
 "raised_leg_plank": "Raised Leg Plank",
 "side_plank": "Side Plank"
+},
+"calendar": {
+"prevMonth": "Previous month",
+"nextMonth": "Next month",
+"monthStats": "Monthly Statistics",
+"sessionsCount": "Workouts",
+"totalTime": "Total time",
+"caloriesBurned": "Calories burned",
+"avgDuration": "Average duration",
+"selectDayHint": "Select a day to view workouts",
+"noSessionsOnDay": "No workouts on this day",
+"unknownPlank": "Unknown plank",
+"dayTotal": "Daily total",
+"trainings": "workouts"
 }
 }

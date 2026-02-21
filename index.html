@@ -168,6 +168,10 @@ width: 100%;
 <span class="tab-icon">📊</span>
 <span class="tab-text" data-i18n="tabs.history">История</span>
 </button>
+<button class="tab-btn" data-tab="calendar">
+<span class="tab-icon">📅</span>
+<span class="tab-text" data-i18n="tabs.calendar">Календарь</span>
+</button>
 <button class="tab-btn" data-tab="settings">
 <span class="tab-icon">⚙️</span>
 <span class="tab-text" data-i18n="tabs.settings">Настройки</span>
@@ -189,6 +193,10 @@ width: 100%;
 <button class="tab-btn" data-tab="history">
 <span class="tab-icon">📊</span>
 <span class="tab-text" data-i18n="tabs.history">История</span>
+</button>
+<button class="tab-btn" data-tab="calendar">
+<span class="tab-icon">📅</span>
+<span class="tab-text" data-i18n="tabs.calendar">Календарь</span>
 </button>
 <button class="tab-btn" data-tab="settings">
 <span class="tab-icon">⚙️</span>
@@ -259,6 +267,12 @@ width: 100%;
 <div class="history-actions">
 <button id="clear-history-btn" class="btn-clear" data-i18n="history.clearHistory">Очистить историю</button>
 </div>
+</div>
+</section>
+<!-- Календарь -->
+<section id="calendar-section" class="section">
+<div class="calendar-container" id="calendar-container">
+<!-- Календарь будет отрендерен здесь -->
 </div>
 </section>
 <!-- Настройки -->
@@ -363,9 +377,11 @@ width: 100%;
 </div>
 <!-- Подключение стилей -->
 <link rel="stylesheet" href="style.css?v=1.0.3">
+<link rel="stylesheet" href="css/calendar.css?v=1.0.0">
 <!-- Подключение JavaScript -->
 <script src="js/i18n.js"></script>
 <script src="js/planks.js"></script>
+<script src="js/calendar.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

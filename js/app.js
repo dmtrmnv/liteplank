@@ -53,6 +53,7 @@ await this.initPlanks();
 this.loadSettings();
 this.loadHistory();
 this.setupEventListeners();
+this.initCalendar();
 this.render();
 this.setupServiceWorker();
 
@@ -65,6 +66,19 @@ async initPlanks() {
 if (window.planksManager) {
 await window.planksManager.loadPlanks();
 window.planksManager.renderPlankSelector('plank-selector-wrapper');
+}
+}
+
+initCalendar() {
+if (window.calendar) {
+window.calendar.init(this.history);
+}
+}
+
+updateCalendar() {
+if (window.calendar) {
+window.calendar.setHistory(this.history);
+window.calendar.update();
 }
 }
 
@@ -89,6 +103,19 @@ languageSelect.value = lang;
 // Обновляем язык в planksManager
 if (window.planksManager) {
 window.planksManager.updateLanguage();
+}
+// Обновляем историю тренировок
+this.updateHistory();
+// Обновляем календарь
+if (window.calendar) {
+window.calendar.updateLanguage();
+}
+// Обновляем title кнопки темы
+const themeToggle = document.getElementById('theme-toggle');
+if (themeToggle) {
+themeToggle.setAttribute('title', window.i18n.translate(
+this.settings.darkMode ? 'theme.light' : 'theme.dark'
+));
 }
 // Показываем уведомление
 const langNames = {
@@ -282,6 +309,7 @@ plankId: currentPlank ? currentPlank.id : null
 this.history.unshift(session);
 this.saveHistory();
 this.updateHistory();
+this.updateCalendar();
 }
 
 calculateCalories(seconds) {
@@ -413,6 +441,7 @@ if (confirm(window.i18n.translate('confirmations.deleteSession'))) {
 this.history.splice(index, 1);
 this.saveHistory();
 this.updateHistory();
+this.updateCalendar();
 this.showNotification(window.i18n.translate('notifications.sessionDeleted'), 'success');
 }
 }
@@ -422,6 +451,7 @@ if (confirm(window.i18n.translate('confirmations.clearHistory'))) {
 this.history = [];
 this.saveHistory();
 this.updateHistory();
+this.updateCalendar();
 this.showNotification(window.i18n.translate('notifications.historyCleared'), 'success');
 }
 }
